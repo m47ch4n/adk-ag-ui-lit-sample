@@ -7,5 +7,5 @@ root_agent = Agent(
     instruction="Answer user questions to the best of your knowledge",
     tools=[
         # AGUIToolset(),
-    ]
+    ],
 )
