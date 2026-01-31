@@ -55,7 +55,7 @@ pnpm preview    # Preview production build locally
 
 ## Key Patterns
 
-### Agent Definition (agent/agent/agent.py)
+### Agent Definition (agent/sample_agent/agent.py)
 
 Agents use Google ADK's `Agent` class with model, description, instruction, and tools.
 

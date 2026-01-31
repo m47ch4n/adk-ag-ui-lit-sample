@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from google.adk.apps import App
 from ag_ui_adk import ADKAgent, add_adk_fastapi_endpoint
 
-from agent.agent.agent import root_agent
+from sample_agent.agent import root_agent
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
