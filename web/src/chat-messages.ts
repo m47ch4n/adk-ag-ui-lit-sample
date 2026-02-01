@@ -1,19 +1,18 @@
-import type { Message } from "@ag-ui/core";
 import { css, html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
+import { repeat } from "lit/directives/repeat.js";
 import { chatTokens } from "./styles/tokens.js";
+import type { ChatLoadingData, ChatMessageData } from "./types.js";
 import "./chat-message.js";
+import "./chat-loading-message.js";
 
 @customElement("chat-messages")
 export class ChatMessages extends LitElement {
 	@property({ type: Array })
-	messages: Message[] = [];
+	messages: ChatMessageData[] = [];
 
-	@property({ type: Boolean })
-	loading = false;
-
-	@property({ type: Boolean })
-	streaming = false;
+	@property({ type: Object })
+	loading: ChatLoadingData | null = null;
 
 	@property({ type: String })
 	error: string | null = null;
@@ -27,17 +26,6 @@ export class ChatMessages extends LitElement {
 		if (container) {
 			container.scrollTop = container.scrollHeight;
 		}
-	}
-
-	private getContentText(content: Message["content"]): string {
-		if (typeof content === "string") return content;
-		if (Array.isArray(content)) {
-			return content
-				.filter((part) => part.type === "text")
-				.map((part) => (part as { type: "text"; text: string }).text)
-				.join("");
-		}
-		return "";
 	}
 
 	render() {
@@ -55,20 +43,29 @@ export class ChatMessages extends LitElement {
                 </slot>
               </div>
             `
-						: this.messages.map(
-								(msg, index) => html`
-                <chat-message
-                  .role=${msg.role as "user" | "assistant"}
-                  .content=${this.getContentText(msg.content)}
-                  .streaming=${this.streaming && msg.role === "assistant" && index === this.messages.length - 1}
-                ></chat-message>
-              `,
+						: repeat(
+								this.messages,
+								(msg) => msg.id,
+								(msg) => html`
+                  <chat-message
+                    .position=${msg.position}
+                    .variant=${msg.variant}
+                    .avatar=${msg.avatar}
+                    .content=${msg.content}
+                  ></chat-message>
+                `,
 							)
 				}
 
         ${
 					this.loading
-						? html`<chat-message role="assistant" loading></chat-message>`
+						? html`
+                <chat-loading-message
+                  .position=${this.loading.position}
+                  .variant=${this.loading.variant}
+                  .avatar=${this.loading.avatar}
+                ></chat-loading-message>
+              `
 						: null
 				}
 

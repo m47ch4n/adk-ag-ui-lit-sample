@@ -20,8 +20,7 @@ export class ChatApp extends LitElement {
 
         <chat-messages
           .messages=${this.agentController.messages}
-          .loading=${this.agentController.isRunning}
-          .streaming=${this.agentController.isRunning}
+          .loading=${this.agentController.loading}
           .error=${this.agentController.error}
         >
           <slot name="messages-header" slot="header"></slot>
