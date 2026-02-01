@@ -6,11 +6,15 @@ Sample application demonstrating [AG-UI protocol](https://docs.ag-ui.com/) integ
 
 ## Features
 
+Implemented and planned features
+
 - [x] Text message streaming
-- [ ] Tool calls visualization
+- [ ] Tool rendering
+- [ ] Frontend tool calls
 - [ ] State synchronization
-- [ ] Human-in-the-loop confirmation
-- [ ] Custom events
+- [ ] Interrupts (Human-in-the-loop)
+- [ ] User authentication and sessions
+- [ ] Multimodality
 
 ## Architecture
 
