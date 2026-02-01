@@ -1,10 +1,10 @@
-/** メッセージの配置 */
+/** Message position */
 export type MessagePosition = "left" | "right";
 
-/** メッセージのバリアント */
+/** Message variant */
 export type MessageVariant = "primary" | "secondary";
 
-/** メッセージデータ */
+/** Chat message data */
 export interface ChatMessageData {
 	id: string;
 	position: MessagePosition;
@@ -13,7 +13,7 @@ export interface ChatMessageData {
 	content: string;
 }
 
-/** ローディング表示用データ */
+/** Loading indicator data */
 export interface ChatLoadingData {
 	position: MessagePosition;
 	variant: MessageVariant;
