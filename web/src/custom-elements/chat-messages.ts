@@ -1,8 +1,8 @@
 import { css, html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { repeat } from "lit/directives/repeat.js";
-import { chatTokens } from "./styles/tokens.js";
-import type { ChatLoadingData, ChatMessageData } from "./types.js";
+import { chatTokens } from "../styles/tokens.js";
+import type { ChatLoadingData, ChatMessageData } from "../types.js";
 import "./chat-message.js";
 import "./chat-loading-message.js";
 
@@ -13,9 +13,6 @@ export class ChatMessages extends LitElement {
 
 	@property({ type: Object })
 	loading: ChatLoadingData | null = null;
-
-	@property({ type: String })
-	error: string | null = null;
 
 	updated() {
 		this.scrollToBottom();
@@ -30,31 +27,41 @@ export class ChatMessages extends LitElement {
 
 	render() {
 		return html`
-      <div part="messages-container" class="messages">
+      <section part="messages-container" class="messages"
+               role="log"
+               aria-label="Chat messages"
+               aria-live="polite"
+               aria-relevant="additions">
         <slot name="header"></slot>
 
         ${
 					this.messages.length === 0
 						? html`
-              <div part="empty-state" class="empty-state">
+              <div part="empty-state" class="empty-state" role="status">
                 <slot name="empty">
-                  <div class="empty-icon">💬</div>
+                  <div class="empty-icon" aria-hidden="true">💬</div>
                   <p>Start a conversation</p>
                 </slot>
               </div>
             `
-						: repeat(
-								this.messages,
-								(msg) => msg.id,
-								(msg) => html`
-                  <chat-message
-                    .position=${msg.position}
-                    .variant=${msg.variant}
-                    .avatar=${msg.avatar}
-                    .content=${msg.content}
-                  ></chat-message>
-                `,
-							)
+						: html`
+              <ul class="message-list" role="list">
+                ${repeat(
+									this.messages,
+									(msg) => msg.id,
+									(msg) => html`
+                    <li>
+                      <chat-message
+                        .position=${msg.position}
+                        .variant=${msg.variant}
+                        .avatar=${msg.avatar}
+                        .content=${msg.content}
+                      ></chat-message>
+                    </li>
+                  `,
+								)}
+              </ul>
+            `
 				}
 
         ${
@@ -69,21 +76,8 @@ export class ChatMessages extends LitElement {
 						: null
 				}
 
-        ${
-					this.error
-						? html`
-              <div part="error" class="error">
-                <slot name="error">
-                  <span class="error-icon">⚠️</span>
-                  ${this.error}
-                </slot>
-              </div>
-            `
-						: null
-				}
-
         <slot name="footer"></slot>
-      </div>
+      </section>
     `;
 	}
 
@@ -144,20 +138,17 @@ export class ChatMessages extends LitElement {
       font-weight: 400;
     }
 
-    .error {
+    .message-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
       display: flex;
-      align-items: center;
-      gap: var(--chat-spacing-sm);
-      padding: var(--chat-spacing-md) var(--chat-spacing-lg);
-      background: var(--chat-error-bg);
-      border: 1px solid var(--chat-error-border);
-      border-radius: var(--chat-radius-md);
-      color: var(--chat-error-text);
-      font-size: var(--chat-font-size-sm);
+      flex-direction: column;
+      gap: var(--chat-spacing-xl);
     }
 
-    .error-icon {
-      font-size: var(--chat-font-size-lg);
+    .message-list li {
+      display: block;
     }
   `,
 	];

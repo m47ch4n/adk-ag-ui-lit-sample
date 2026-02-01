@@ -1,8 +1,57 @@
+import DOMPurify from "dompurify";
 import { css, html, LitElement } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { unsafeHTML } from "lit/directives/unsafe-html.js";
-import { chatTokens } from "./styles/tokens.js";
-import { processMarkdown } from "./utils/markdown-processor.js";
+import { marked } from "marked";
+import remend from "remend";
+import { chatTokens } from "../styles/tokens.js";
+
+function processMarkdown(text: string): string {
+	if (!text) return "";
+
+	// Step 1: Auto-complete incomplete Markdown using remend
+	const completedText = remend(text);
+
+	// Step 2: Convert Markdown to HTML using marked
+	const html = marked.parse(completedText, { async: false }) as string;
+
+	// Step 3: Sanitize HTML to prevent XSS
+	const sanitizedHtml = DOMPurify.sanitize(html, {
+		ALLOWED_TAGS: [
+			"p",
+			"br",
+			"strong",
+			"em",
+			"code",
+			"pre",
+			"blockquote",
+			"ul",
+			"ol",
+			"li",
+			"a",
+			"h1",
+			"h2",
+			"h3",
+			"h4",
+			"h5",
+			"h6",
+			"table",
+			"thead",
+			"tbody",
+			"tr",
+			"th",
+			"td",
+			"hr",
+			"del",
+			"s",
+			"sup",
+			"sub",
+		],
+		ALLOWED_ATTR: ["href", "target", "rel", "class"],
+	});
+
+	return sanitizedHtml;
+}
 
 const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
 @customElement("markdown-content")

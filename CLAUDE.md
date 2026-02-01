@@ -15,6 +15,26 @@ Sample application demonstrating AG-UI protocol integration with Google ADK (Age
 
 The agent exposes `/chat` endpoint via FastAPI with AG-UI protocol support. The web frontend communicates with this endpoint through Vite's dev proxy (`/api/*` → `localhost:8000/*`).
 
+### Frontend Structure
+
+```
+web/src/
+├── custom-elements/     # Reusable Custom Elements (framework-agnostic primitives)
+│   ├── chat-message.ts
+│   ├── chat-loading-message.ts
+│   ├── chat-messages.ts
+│   ├── chat-input.ts
+│   ├── markdown-content.ts
+│   ├── toast-manager.ts    # Notification container (aria-live region)
+│   └── toast-item.ts       # Individual notification
+├── styles/              # Shared CSS (tokens, base styles, a11y utilities)
+├── types.ts             # Shared TypeScript types
+├── ag-ui-controller.ts  # AG-UI client wrapper (ReactiveController)
+└── chat-app.ts          # Application entry point (Lit + AgUiController)
+```
+
+**Design principle:** Custom elements in `custom-elements/` are designed as primitive, reusable components independent of application logic. Only `chat-app.ts` contains application-specific integration with `AgUiController`.
+
 ## Commands
 
 ### Agent (Python Backend)
@@ -77,6 +97,16 @@ Agents use Google ADK's `Agent` class with model, description, instruction, and 
 
 `AgUiController` implements Lit's `ReactiveController` pattern to manage AG-UI client communication. It wraps `HttpAgent` from `@ag-ui/client`, handles message state, and triggers host updates on events (messages changed, run failed, run finalized).
 
-### Lit Components (web/src/)
+**Event-based communication:** `AgUiController` emits custom events for cross-cutting concerns. For example, `ag-ui-error` event is dispatched on errors, which `chat-app` listens to for showing toast notifications. This keeps the controller decoupled from UI concerns like notifications.
 
-Components extend `LitElement` with `@customElement` decorator, `@property()` for reactive state, `static styles` with `css` literal, and `html` literal for rendering. Declare custom elements in `HTMLElementTagNameMap`.
+### Custom Elements (web/src/custom-elements/)
+
+Custom elements extend `LitElement` with `@customElement` decorator, `@property()` for reactive state, `static styles` with `css` literal, and `html` literal for rendering. Declare custom elements in `HTMLElementTagNameMap`. These are NOT "components" in the Virtual DOM sense—they are native Custom Elements.
+
+### Toast System (web/src/custom-elements/toast-*.ts)
+
+Two-layer architecture for accessible notifications:
+- **`toast-manager`**: Container with `aria-live` region (exists from page load for screen reader compatibility). Manages toast stack, emits `toast-close` events.
+- **`toast-item`**: Individual notification with auto-dismiss timer, pause on hover/focus, close button.
+
+Errors use `noAutoDismiss: true` to persist until user dismissal.

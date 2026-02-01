@@ -1,27 +1,63 @@
 import { css, html, LitElement } from "lit";
-import { customElement } from "lit/decorators.js";
+import { customElement, state } from "lit/decorators.js";
 import { AgUiController } from "./ag-ui-controller.js";
 import { chatTokens } from "./styles/tokens.js";
-import "./chat-messages.js";
-import "./chat-input.js";
+import "./custom-elements/chat-messages.js";
+import "./custom-elements/chat-input.js";
+import "./custom-elements/toast-manager.js";
+import type { ToastData } from "./custom-elements/toast-manager.js";
 
 @customElement("chat-app")
 export class ChatApp extends LitElement {
 	private agentController = new AgUiController(this);
 
+	@state()
+	private _toasts: ToastData[] = [];
+
+	connectedCallback() {
+		super.connectedCallback();
+		this.addEventListener(
+			"ag-ui-error",
+			this._handleAgUiError as EventListener,
+		);
+	}
+
+	disconnectedCallback() {
+		super.disconnectedCallback();
+		this.removeEventListener(
+			"ag-ui-error",
+			this._handleAgUiError as EventListener,
+		);
+	}
+
+	private _handleAgUiError = (e: CustomEvent<{ message: string }>) => {
+		this._toasts = [
+			...this._toasts,
+			{
+				id: `toast-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+				message: e.detail.message,
+				type: "error",
+				noAutoDismiss: true,
+			},
+		];
+	};
+
 	private handleSend(e: CustomEvent<{ message: string }>) {
 		this.agentController.sendMessage(e.detail.message);
 	}
 
+	private _handleToastClose(e: CustomEvent<{ id: string }>) {
+		this._toasts = this._toasts.filter((t) => t.id !== e.detail.id);
+	}
+
 	render() {
 		return html`
-      <div part="container" class="chat-container">
+      <main part="container" class="chat-container" aria-label="Chat application">
         <slot name="header"></slot>
 
         <chat-messages
           .messages=${this.agentController.messages}
           .loading=${this.agentController.loading}
-          .error=${this.agentController.error}
         >
           <slot name="messages-header" slot="header"></slot>
           <slot name="messages-empty" slot="empty"></slot>
@@ -31,8 +67,15 @@ export class ChatApp extends LitElement {
         <chat-input
           @send=${this.handleSend}
           ?disabled=${this.agentController.isRunning}
+          label="Type your message"
         ></chat-input>
-      </div>
+      </main>
+
+      <toast-manager
+        .toasts=${this._toasts}
+        position="bottom-right"
+        @toast-close=${this._handleToastClose}
+      ></toast-manager>
     `;
 	}
 

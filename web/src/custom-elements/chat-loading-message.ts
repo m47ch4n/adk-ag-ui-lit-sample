@@ -1,8 +1,9 @@
 import { css, html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
-import { chatMessageBaseStyles } from "./styles/chat-message-base.js";
-import { chatTokens } from "./styles/tokens.js";
-import type { MessagePosition, MessageVariant } from "./types.js";
+import { a11yStyles } from "../styles/a11y.js";
+import { chatMessageBaseStyles } from "../styles/chat-message-base.js";
+import { chatTokens } from "../styles/tokens.js";
+import type { MessagePosition, MessageVariant } from "../types.js";
 
 @customElement("chat-loading-message")
 export class ChatLoadingMessage extends LitElement {
@@ -17,11 +18,14 @@ export class ChatLoadingMessage extends LitElement {
 
 	render() {
 		return html`
-      <div part="message" class="message ${this.position} ${this.variant}">
-        <div part="avatar" class="avatar">
+      <div part="message" class="message ${this.position} ${this.variant}"
+           role="status" aria-label="Assistant is typing">
+        <div part="avatar" class="avatar" aria-hidden="true">
           <slot name="avatar">${this.avatar}</slot>
         </div>
-        <div part="bubble" class="bubble"></div>
+        <div part="bubble" class="bubble">
+          <span class="visually-hidden">Loading response</span>
+        </div>
       </div>
     `;
 	}
@@ -29,6 +33,7 @@ export class ChatLoadingMessage extends LitElement {
 	static styles = [
 		chatTokens,
 		chatMessageBaseStyles,
+		a11yStyles,
 		css`
       .bubble {
         color: var(--chat-text-muted);

@@ -1,14 +1,23 @@
 import { css, html, LitElement } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
-import { chatTokens } from "./styles/tokens.js";
+import { a11yStyles } from "../styles/a11y.js";
+import { chatTokens } from "../styles/tokens.js";
 
 @customElement("chat-input")
 export class ChatInput extends LitElement {
+	static shadowRootOptions = {
+		...LitElement.shadowRootOptions,
+		delegatesFocus: true,
+	};
+
 	@property({ type: Boolean })
 	disabled = false;
 
 	@property({ type: String })
 	placeholder = "Type a message...";
+
+	@property({ type: String })
+	label = "Message";
 
 	@state()
 	private value = "";
@@ -57,7 +66,9 @@ export class ChatInput extends LitElement {
       <form part="form" class="input-form" @submit=${this.handleSubmit}>
         <slot name="prefix"></slot>
         <div part="input-wrapper" class="input-wrapper">
+          <label for="chat-input-field" class="visually-hidden">${this.label}</label>
           <textarea
+            id="chat-input-field"
             part="input"
             rows="2"
             .value=${this.value}
@@ -67,10 +78,12 @@ export class ChatInput extends LitElement {
             @compositionend=${this.handleCompositionEnd}
             placeholder=${this.placeholder}
             ?disabled=${this.disabled}
+            aria-describedby="input-hint"
           ></textarea>
+          <span id="input-hint" class="visually-hidden">Press Enter to send, Shift+Enter for new line</span>
         </div>
         <slot name="suffix">
-          <button part="send-button" type="submit" ?disabled=${this.disabled || !this.value.trim()}>
+          <button part="send-button" type="submit" ?disabled=${this.disabled || !this.value.trim()} aria-label="Send message">
             <slot name="send-icon">
               <svg
                 width="20"
@@ -81,6 +94,7 @@ export class ChatInput extends LitElement {
                 stroke-width="2"
                 stroke-linecap="round"
                 stroke-linejoin="round"
+                aria-hidden="true"
               >
                 <line x1="22" y1="2" x2="11" y2="13"></line>
                 <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
@@ -94,6 +108,7 @@ export class ChatInput extends LitElement {
 
 	static styles = [
 		chatTokens,
+		a11yStyles,
 		css`
     :host {
       display: block;

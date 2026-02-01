@@ -83,7 +83,7 @@ export class AgUiController implements ReactiveController {
 			},
 			onRunFailed: ({ error }) => {
 				console.error("Subscriber Error:", error);
-				this.error = "Stream error occurred";
+				this._emitError("Stream error occurred");
 				this.host.requestUpdate();
 			},
 			onRunFinalized: () => {
@@ -121,8 +121,19 @@ export class AgUiController implements ReactiveController {
 			});
 		} catch (e) {
 			console.error("Error:", e);
-			this.error = e instanceof Error ? e.message : "Unknown error";
+			this._emitError(e instanceof Error ? e.message : "Unknown error");
 			this.host.requestUpdate();
 		}
+	}
+
+	private _emitError(message: string) {
+		this.error = message;
+		(this.host as unknown as EventTarget).dispatchEvent(
+			new CustomEvent("ag-ui-error", {
+				detail: { message },
+				bubbles: true,
+				composed: true,
+			}),
+		);
 	}
 }
