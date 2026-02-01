@@ -1,22 +1,60 @@
 import { css, html, LitElement } from "lit";
-import { customElement, property } from "lit/decorators.js";
+import { customElement, property, state } from "lit/decorators.js";
 import { unsafeHTML } from "lit/directives/unsafe-html.js";
 import { chatTokens } from "./styles/tokens.js";
 import { processMarkdown } from "./utils/markdown-processor.js";
 
+const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
 @customElement("markdown-content")
 export class MarkdownContent extends LitElement {
 	@property({ type: String })
 	content = "";
 
-	@property({ type: Boolean })
-	streaming = false;
+	/** Duration (ms) to type out all buffered content */
+	@property({ type: Number })
+	typingDuration = 300;
+
+	/** Typing animation frame rate */
+	@property({ type: Number })
+	fps = 60;
+
+	@state() private _typed = "";
+	private _typing = false;
+
+	updated(changedProperties: Map<string, unknown>) {
+		if (changedProperties.has("content") && this._typed !== this.content) {
+			this._handleContentChange();
+		}
+	}
+
+	private async _handleContentChange() {
+		await this.updateComplete;
+		await this._typeOut();
+	}
+
+	private async _typeOut() {
+		if (this._typing) return;
+		this._typing = true;
+
+		const interval = 1000 / this.fps;
+
+		while (this._typed.length < this.content.length) {
+			const remaining = this.content.length - this._typed.length;
+			const framesToCatchUp = this.typingDuration / interval;
+			const charsPerFrame = Math.max(1, Math.ceil(remaining / framesToCatchUp));
+
+			this._typed = this.content.slice(0, this._typed.length + charsPerFrame);
+			await delay(interval);
+		}
+
+		this._typing = false;
+	}
 
 	render() {
-		const processedHtml = processMarkdown(this.content);
+		const processedHtml = processMarkdown(this._typed);
 
 		return html`
-      <div part="markdown-content" class="markdown-content ${this.streaming ? "streaming" : ""}">
+      <div part="markdown-content" class="markdown-content">
         ${unsafeHTML(processedHtml)}
       </div>
     `;
@@ -31,19 +69,6 @@ export class MarkdownContent extends LitElement {
 
     .markdown-content {
       line-height: var(--chat-line-height-relaxed);
-    }
-
-    .markdown-content.streaming::after {
-      content: "▋";
-      display: inline;
-      animation: blink 1s steps(2) infinite;
-      color: currentColor;
-      opacity: 0.7;
-    }
-
-    @keyframes blink {
-      0%, 50% { opacity: 0.7; }
-      51%, 100% { opacity: 0; }
     }
 
     .markdown-content p {
