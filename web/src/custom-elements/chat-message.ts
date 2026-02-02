@@ -2,7 +2,7 @@ import { html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { chatMessageBaseStyles } from "../styles/chat-message-base.js";
 import { chatTokens } from "../styles/tokens.js";
-import type { MessagePosition, MessageVariant } from "../types.js";
+import type { MessagePosition, MessageVariant } from "../types/index.js";
 import "./markdown-content.js";
 
 @customElement("chat-message")

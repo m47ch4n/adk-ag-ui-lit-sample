@@ -3,7 +3,7 @@ import { customElement, property } from "lit/decorators.js";
 import { a11yStyles } from "../styles/a11y.js";
 import { chatMessageBaseStyles } from "../styles/chat-message-base.js";
 import { chatTokens } from "../styles/tokens.js";
-import type { MessagePosition, MessageVariant } from "../types.js";
+import type { MessagePosition, MessageVariant } from "../types/index.js";
 
 @customElement("chat-loading-message")
 export class ChatLoadingMessage extends LitElement {

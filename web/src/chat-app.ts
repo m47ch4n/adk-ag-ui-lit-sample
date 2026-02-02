@@ -1,49 +1,131 @@
+import type { Message } from "@ag-ui/core";
 import { css, html, LitElement } from "lit";
-import { customElement, state } from "lit/decorators.js";
-import { AgUiController } from "./ag-ui-controller.js";
-import { chatTokens } from "./styles/tokens.js";
-import "./custom-elements/chat-messages.js";
+import { customElement, query, state } from "lit/decorators.js";
+import type { AgUiAgent } from "./ag-ui-agent.js";
+import "./ag-ui-agent.js";
 import "./custom-elements/chat-input.js";
+import "./custom-elements/chat-messages.js";
 import "./custom-elements/toast-manager.js";
 import type { ToastData } from "./custom-elements/toast-manager.js";
+import { chatTokens } from "./styles/tokens.js";
+import type {
+	AgUiMessagesChangedEvent,
+	AgUiRunFailedEvent,
+	AgUiRunFinalizedEvent,
+	AgUiRunStartedEvent,
+	ChatLoadingData,
+	ChatMessageData,
+} from "./types/index.js";
+
+type DisplayableRole = "user" | "assistant";
 
 @customElement("chat-app")
 export class ChatApp extends LitElement {
-	private agentController = new AgUiController(this);
+	@query("ag-ui-agent")
+	private _agentElement!: AgUiAgent;
+
+	@state()
+	private _messages: ChatMessageData[] = [];
+
+	@state()
+	private _loading: ChatLoadingData | null = null;
+
+	@state()
+	private _isRunning = false;
 
 	@state()
 	private _toasts: ToastData[] = [];
 
-	connectedCallback() {
-		super.connectedCallback();
-		this.addEventListener(
-			"ag-ui-error",
-			this._handleAgUiError as EventListener,
-		);
+	private _handleMessagesChanged = (e: AgUiMessagesChangedEvent) => {
+		this._messages = this._transformMessages(e.detail.messages);
+		this._loading = this._computeLoading(e.detail.messages);
+	};
+
+	private _handleRunStarted = (_e: AgUiRunStartedEvent) => {
+		this._isRunning = true;
+		this._loading = {
+			position: "left",
+			variant: "secondary",
+			avatar: "A",
+		};
+	};
+
+	private _handleRunFailed = (e: AgUiRunFailedEvent) => {
+		this._isRunning = false;
+		this._loading = null;
+		const message =
+			e.detail.error instanceof Error
+				? e.detail.error.message
+				: "Unknown error";
+		this._addErrorToast(message);
+	};
+
+	private _handleRunFinalized = (_e: AgUiRunFinalizedEvent) => {
+		this._isRunning = false;
+		this._loading = null;
+	};
+
+	private _transformMessages(messages: Message[]): ChatMessageData[] {
+		return messages
+			.filter(
+				(msg): msg is Message & { role: DisplayableRole } =>
+					msg.role === "user" || msg.role === "assistant",
+			)
+			.map((msg) => ({
+				id: msg.id,
+				position: msg.role === "user" ? "right" : "left",
+				variant: msg.role === "user" ? "primary" : "secondary",
+				avatar: msg.role === "user" ? "U" : "A",
+				content: this._getContentText(msg.content),
+			}));
 	}
 
-	disconnectedCallback() {
-		super.disconnectedCallback();
-		this.removeEventListener(
-			"ag-ui-error",
-			this._handleAgUiError as EventListener,
-		);
+	private _getContentText(content: Message["content"]): string {
+		if (typeof content === "string") return content;
+		if (Array.isArray(content)) {
+			return content
+				.filter(
+					(part): part is { type: "text"; text: string } =>
+						part.type === "text",
+				)
+				.map((part) => part.text)
+				.join("");
+		}
+		return "";
 	}
 
-	private _handleAgUiError = (e: CustomEvent<{ message: string }>) => {
+	private _computeLoading(messages: Message[]): ChatLoadingData | null {
+		if (!this._isRunning) return null;
+
+		const lastMessage = messages.at(-1);
+		if (
+			lastMessage?.role === "assistant" &&
+			this._getContentText(lastMessage.content)
+		) {
+			return null;
+		}
+
+		return {
+			position: "left",
+			variant: "secondary",
+			avatar: "A",
+		};
+	}
+
+	private _addErrorToast(message: string) {
 		this._toasts = [
 			...this._toasts,
 			{
 				id: `toast-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
-				message: e.detail.message,
+				message,
 				type: "error",
 				noAutoDismiss: true,
 			},
 		];
-	};
+	}
 
-	private handleSend(e: CustomEvent<{ message: string }>) {
-		this.agentController.sendMessage(e.detail.message);
+	private _handleSend(e: CustomEvent<{ message: string }>) {
+		this._agentElement.sendMessage(e.detail.message);
 	}
 
 	private _handleToastClose(e: CustomEvent<{ id: string }>) {
@@ -52,21 +134,25 @@ export class ChatApp extends LitElement {
 
 	render() {
 		return html`
+      <ag-ui-agent
+        @ag-ui-messages-changed=${this._handleMessagesChanged}
+        @ag-ui-run-started=${this._handleRunStarted}
+        @ag-ui-run-failed=${this._handleRunFailed}
+        @ag-ui-run-finalized=${this._handleRunFinalized}
+      ></ag-ui-agent>
+
       <main part="container" class="chat-container" aria-label="Chat application">
         <slot name="header"></slot>
 
         <chat-messages
-          .messages=${this.agentController.messages}
-          .loading=${this.agentController.loading}
+          .messages=${this._messages}
+          .loading=${this._loading}
         >
-          <slot name="messages-header" slot="header"></slot>
-          <slot name="messages-empty" slot="empty"></slot>
-          <slot name="messages-footer" slot="footer"></slot>
         </chat-messages>
 
         <chat-input
-          @send=${this.handleSend}
-          ?disabled=${this.agentController.isRunning}
+          @send=${this._handleSend}
+          ?disabled=${this._isRunning}
           label="Type your message"
         ></chat-input>
       </main>

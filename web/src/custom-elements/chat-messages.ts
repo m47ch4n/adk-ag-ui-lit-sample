@@ -2,7 +2,7 @@ import { css, html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { repeat } from "lit/directives/repeat.js";
 import { chatTokens } from "../styles/tokens.js";
-import type { ChatLoadingData, ChatMessageData } from "../types.js";
+import type { ChatLoadingData, ChatMessageData } from "../types/index.js";
 import "./chat-message.js";
 import "./chat-loading-message.js";
 
