@@ -20,20 +20,15 @@ The agent exposes `/chat` endpoint via FastAPI with AG-UI protocol support. The 
 ```
 web/src/
 ├── custom-elements/     # Reusable Custom Elements (framework-agnostic primitives)
-│   ├── chat-message.ts
-│   ├── chat-loading-message.ts
-│   ├── chat-messages.ts
-│   ├── chat-input.ts
-│   ├── markdown-content.ts
-│   ├── toast-manager.ts    # Notification container (aria-live region)
-│   └── toast-item.ts       # Individual notification
 ├── styles/              # Shared CSS (tokens, base styles, a11y utilities)
-├── types.ts             # Shared TypeScript types
-├── ag-ui-controller.ts  # AG-UI client wrapper (ReactiveController)
-└── chat-app.ts          # Application entry point (Lit + AgUiController)
+├── types/               # TypeScript type definitions
+│   ├── message.ts       # Chat message types (ChatMessageData, ChatLoadingData)
+│   └── events.ts        # AG-UI event types
+├── ag-ui-agent.ts       # Headless Custom Element wrapping HttpAgent
+└── chat-app.ts          # Application entry point
 ```
 
-**Design principle:** Custom elements in `custom-elements/` are designed as primitive, reusable components independent of application logic. Only `chat-app.ts` contains application-specific integration with `AgUiController`.
+**Design principle:** Custom elements in `custom-elements/` are primitive, reusable components independent of application logic. `ag-ui-agent` is a headless Custom Element that handles AG-UI protocol communication and dispatches events.
 
 ## Commands
 
@@ -93,20 +88,27 @@ Agents use Google ADK's `Agent` class with model, description, instruction, and 
 
 `ADKAgent.from_app()` wraps the ADK app, and `add_adk_fastapi_endpoint()` adds the AG-UI endpoint. Custom headers can be extracted via `extract_headers` parameter.
 
-### Frontend State Management (web/src/ag-ui-controller.ts)
+### Frontend Event-Driven Architecture (web/src/ag-ui-agent.ts)
 
-`AgUiController` implements Lit's `ReactiveController` pattern to manage AG-UI client communication. It wraps `HttpAgent` from `@ag-ui/client`, handles message state, and triggers host updates on events (messages changed, run failed, run finalized).
+`<ag-ui-agent>` is a headless Custom Element (Shadow DOM disabled) that wraps `HttpAgent` from `@ag-ui/client`. It dispatches these events:
 
-**Event-based communication:** `AgUiController` emits custom events for cross-cutting concerns. For example, `ag-ui-error` event is dispatched on errors, which `chat-app` listens to for showing toast notifications. This keeps the controller decoupled from UI concerns like notifications.
+| Event | Detail | Timing |
+|-------|--------|--------|
+| `ag-ui-messages-changed` | `{ messages: Message[] }` | On message update |
+| `ag-ui-run-started` | `{ threadId: string }` | On run start |
+| `ag-ui-run-failed` | `{ error: unknown }` | On error |
+| `ag-ui-run-finalized` | `{ threadId: string }` | On run complete |
+
+`chat-app.ts` listens to these events and manages UI state with `@state()` decorators.
 
 ### Custom Elements (web/src/custom-elements/)
 
-Custom elements extend `LitElement` with `@customElement` decorator, `@property()` for reactive state, `static styles` with `css` literal, and `html` literal for rendering. Declare custom elements in `HTMLElementTagNameMap`. These are NOT "components" in the Virtual DOM sense—they are native Custom Elements.
+Custom elements extend `LitElement` with `@customElement` decorator, `@property()` for reactive state, `static styles` with `css` literal, and `html` literal for rendering. Declare custom elements in `HTMLElementTagNameMap`. These are native Custom Elements, not Virtual DOM components.
 
 ### Toast System (web/src/custom-elements/toast-*.ts)
 
 Two-layer architecture for accessible notifications:
-- **`toast-manager`**: Container with `aria-live` region (exists from page load for screen reader compatibility). Manages toast stack, emits `toast-close` events.
-- **`toast-item`**: Individual notification with auto-dismiss timer, pause on hover/focus, close button.
+- **`toast-manager`**: Container with `aria-live` region. Manages toast stack, emits `toast-close` events.
+- **`toast-item`**: Individual notification with auto-dismiss timer, pause on hover/focus.
 
 Errors use `noAutoDismiss: true` to persist until user dismissal.

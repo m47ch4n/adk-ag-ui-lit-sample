@@ -16,13 +16,6 @@ Implemented and planned features
 - [ ] User authentication and sessions
 - [ ] Multimodality
 
-## Architecture
-
-```
-├── agent/ # Python backend - Google ADK agent with AG-UI middleware
-└── web/   # TypeScript frontend - Lit web components with Vite
-```
-
 ## Prerequisites
 
 - Python 3.13+ with [uv](https://docs.astral.sh/uv/)
@@ -59,6 +52,31 @@ pnpm dev
 ```
 
 The dev server starts on http://localhost:5173 with hot reload.
+
+## Architecture
+
+```
+├── agent/ # Python backend - Google ADK agent with AG-UI middleware
+└── web/   # TypeScript frontend - Lit web components with Vite
+```
+
+### Frontend
+
+The frontend follows the **["properties down, events up"](https://lit.dev/docs/composition/component-composition/#when-to-use-properties-events-or-slots)** pattern from Lit/Web Components conventions. Data flows down via properties, while state changes propagate up via CustomEvents.
+
+`<ag-ui-agent>` is a headless Custom Element that handles AG-UI protocol communication and dispatches events upward. `<chat-app>` acts as a [mediator](https://lit.dev/docs/composition/component-composition/#mediator-pattern) that listens to these events, updates its internal state, and passes data down to sibling components as properties.
+
+```mermaid
+graph LR
+    subgraph chat-app
+        direction TB
+        agent[ag-ui-agent] -->|CustomEvent| state["@state()"]
+        state -->|props| messages[chat-messages]
+        state -->|props| input[chat-input]
+        input -->|sendMessage| agent
+    end
+    agent <-->|SSE| adk[ADK Agent]
+```
 
 ## Tech Stack
 
