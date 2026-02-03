@@ -8,13 +8,18 @@ import "./custom-elements/chat-messages.js";
 import "./custom-elements/toast-manager.js";
 import type { ToastData } from "./custom-elements/toast-manager.js";
 import { chatTokens } from "./styles/tokens.js";
+import { registerHelloTool } from "./tools/hello-tool.js";
 import type {
 	AgUiMessagesChangedEvent,
 	AgUiRunFailedEvent,
 	AgUiRunFinalizedEvent,
 	AgUiRunStartedEvent,
+	AgUiToolCallEndEvent,
+	AgUiToolCallErrorEvent,
+	AgUiToolCallStartEvent,
 	ChatLoadingData,
 	ChatMessageData,
+	DefineToolEvent,
 } from "./types/index.js";
 
 type DisplayableRole = "user" | "assistant";
@@ -65,7 +70,50 @@ export class ChatApp extends LitElement {
 		this._loading = null;
 	};
 
+	private _handleToolCallStart = (e: AgUiToolCallStartEvent) => {
+		// WIP
+		console.log(e);
+	};
+
+	private _handleToolCallEnd = (e: AgUiToolCallEndEvent) => {
+		// WIP
+		console.log(e);
+	};
+
+	private _handleToolCallError = (e: AgUiToolCallErrorEvent) => {
+		// WIP
+		console.log(e);
+	};
+
+	private _handleDefineTool = (e: Event) => {
+		const event = e as DefineToolEvent;
+		const { name, description, parameters, handler } = event.detail;
+		this._agentElement.registerTool(
+			name,
+			description,
+			// biome-ignore lint/suspicious/noExplicitAny: Parameters come from external define-tool event
+			parameters as any,
+			handler,
+		);
+	};
+
+	connectedCallback() {
+		super.connectedCallback();
+		document.addEventListener("define-tool", this._handleDefineTool);
+	}
+
+	firstUpdated() {
+		// Register tools after first render when _agentElement is available
+		registerHelloTool();
+	}
+
+	disconnectedCallback() {
+		super.disconnectedCallback();
+		document.removeEventListener("define-tool", this._handleDefineTool);
+	}
+
 	private _transformMessages(messages: Message[]): ChatMessageData[] {
+		console.log({ messages });
 		return messages
 			.filter(
 				(msg): msg is Message & { role: DisplayableRole } =>
@@ -139,6 +187,9 @@ export class ChatApp extends LitElement {
         @ag-ui-run-started=${this._handleRunStarted}
         @ag-ui-run-failed=${this._handleRunFailed}
         @ag-ui-run-finalized=${this._handleRunFinalized}
+        @ag-ui-tool-call-start=${this._handleToolCallStart}
+        @ag-ui-tool-call-end=${this._handleToolCallEnd}
+        @ag-ui-tool-call-error=${this._handleToolCallError}
       ></ag-ui-agent>
 
       <main part="container" class="chat-container" aria-label="Chat application">
@@ -180,6 +231,14 @@ export class ChatApp extends LitElement {
       max-width: var(--chat-container-max-width);
       margin: 0 auto;
       background: var(--chat-surface-primary);
+    }
+
+    .tool-calls {
+      display: flex;
+      flex-direction: column;
+      gap: var(--chat-spacing-sm);
+      padding: var(--chat-spacing-md) var(--chat-spacing-lg);
+      border-top: 1px solid var(--chat-border-secondary);
     }
   `,
 	];

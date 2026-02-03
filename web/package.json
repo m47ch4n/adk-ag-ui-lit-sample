@@ -15,11 +15,11 @@
     "dompurify": "^3.3.1",
     "lit": "^3.3.1",
     "marked": "^17.0.1",
-    "remend": "^1.1.0"
+    "remend": "^1.1.0",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@biomejs/biome": "2.3.13",
-    "@types/dompurify": "^3.2.0",
     "typescript": "~5.9.3",
     "vite": "npm:rolldown-vite@7.2.5"
   },

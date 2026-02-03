@@ -1,12 +1,18 @@
 import { type AgentSubscriber, HttpAgent } from "@ag-ui/client";
-import type { Message, UserMessage } from "@ag-ui/core";
+import type { Message, Tool, ToolMessage, UserMessage } from "@ag-ui/core";
 import { LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
+import { z } from "zod";
 import type {
 	AgUiMessagesChangedEvent,
 	AgUiRunFailedEvent,
 	AgUiRunFinalizedEvent,
 	AgUiRunStartedEvent,
+	AgUiToolCallEndEvent,
+	AgUiToolCallErrorEvent,
+	AgUiToolCallStartEvent,
+	RegisteredTool,
+	ToolHandler,
 } from "./types/index.js";
 
 /**
@@ -23,6 +29,7 @@ export class AgUiAgent extends LitElement {
 
 	private _agent: HttpAgent | null = null;
 	private _unsubscribe: (() => void) | null = null;
+	private _registeredTools: Map<string, RegisteredTool> = new Map();
 
 	get isRunning(): boolean {
 		return this._agent?.isRunning ?? false;
@@ -30,6 +37,63 @@ export class AgUiAgent extends LitElement {
 
 	get messages(): Message[] {
 		return this._agent?.messages ?? [];
+	}
+
+	/**
+	 * Register a tool that can be invoked by the LLM.
+	 * @param name - Unique tool name
+	 * @param description - Description of what the tool does
+	 * @param parameters - Zod schema for tool parameters
+	 * @param handler - Function to execute when tool is called
+	 */
+	registerTool(
+		name: string,
+		description: string,
+		// biome-ignore lint/suspicious/noExplicitAny: Accept Zod schema as unknown for flexibility
+		parameters: z.ZodType<any, any>,
+		handler: ToolHandler,
+	): void {
+		const jsonSchema = z.toJSONSchema(parameters);
+		this._registeredTools.set(name, {
+			name,
+			description,
+			parameters: jsonSchema,
+			handler,
+		});
+	}
+
+	/**
+	 * Unregister a previously registered tool.
+	 * @param name - Name of the tool to unregister
+	 */
+	unregisterTool(name: string): void {
+		this._registeredTools.delete(name);
+	}
+
+	/**
+	 * Get list of registered tool names.
+	 */
+	get registeredToolNames(): string[] {
+		return Array.from(this._registeredTools.keys());
+	}
+
+	/**
+	 * Convert registered tools to AG-UI Tool format.
+	 * Removes $schema property as Google ADK's types.Schema doesn't allow it.
+	 */
+	private _getToolsForAgent(): Tool[] {
+		return Array.from(this._registeredTools.values()).map((tool) => {
+			// Remove $schema from parameters as ADK doesn't accept it
+			const { $schema, ...parameters } = tool.parameters as Record<
+				string,
+				unknown
+			>;
+			return {
+				name: tool.name,
+				description: tool.description,
+				parameters,
+			};
+		});
 	}
 
 	/** Disable Shadow DOM for headless operation */
@@ -69,6 +133,62 @@ export class AgUiAgent extends LitElement {
 				this._dispatchEvent("ag-ui-run-finalized", {
 					threadId: this.threadId,
 				} satisfies AgUiRunFinalizedEvent["detail"]);
+			},
+			onToolCallStartEvent: (params) => {
+				this._dispatchEvent("ag-ui-tool-call-start", {
+					toolCallId: params.event.toolCallId,
+					toolCallName: params.event.toolCallName,
+				} satisfies AgUiToolCallStartEvent["detail"]);
+			},
+			onToolCallEndEvent: async (params) => {
+				const { toolCallName, toolCallArgs } = params;
+				const toolCallId = params.event.toolCallId;
+
+				const registeredTool = this._registeredTools.get(toolCallName);
+				if (!registeredTool) {
+					// Tool not registered locally - let backend handle it
+					return;
+				}
+
+				try {
+					const result = await registeredTool.handler(toolCallArgs);
+
+					// Add ToolMessage to the agent
+					const toolMessage: ToolMessage = {
+						id: crypto.randomUUID(),
+						role: "tool",
+						content: result,
+						toolCallId,
+					};
+					this._agent?.addMessage(toolMessage);
+
+					this._dispatchEvent("ag-ui-tool-call-end", {
+						toolCallId,
+						toolCallName,
+						toolCallArgs,
+						result,
+					} satisfies AgUiToolCallEndEvent["detail"]);
+				} catch (error) {
+					console.error(`Tool "${toolCallName}" execution failed:`, error);
+
+					// Add error ToolMessage
+					const errorMessage =
+						error instanceof Error ? error.message : String(error);
+					const toolMessage: ToolMessage = {
+						id: crypto.randomUUID(),
+						role: "tool",
+						content: "",
+						toolCallId,
+						error: errorMessage,
+					};
+					this._agent?.addMessage(toolMessage);
+
+					this._dispatchEvent("ag-ui-tool-call-error", {
+						toolCallId,
+						toolCallName,
+						error,
+					} satisfies AgUiToolCallErrorEvent["detail"]);
+				}
 			},
 		};
 
@@ -110,7 +230,7 @@ export class AgUiAgent extends LitElement {
 
 		try {
 			await this._agent.runAgent({
-				tools: [],
+				tools: this._getToolsForAgent(),
 				context: [],
 			});
 		} catch (e) {
