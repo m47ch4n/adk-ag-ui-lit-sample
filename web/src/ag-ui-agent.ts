@@ -41,24 +41,25 @@ export class AgUiAgent extends LitElement {
 
 	/**
 	 * Register a tool that can be invoked by the LLM.
+	 * The generic parameter ensures type safety between the Zod schema and handler.
+	 *
 	 * @param name - Unique tool name
 	 * @param description - Description of what the tool does
 	 * @param parameters - Zod schema for tool parameters
-	 * @param handler - Function to execute when tool is called
+	 * @param handler - Function to execute when tool is called (args typed from schema)
 	 */
-	registerTool(
+	registerTool<T extends z.ZodTypeAny>(
 		name: string,
 		description: string,
-		// biome-ignore lint/suspicious/noExplicitAny: Accept Zod schema as unknown for flexibility
-		parameters: z.ZodType<any, any>,
-		handler: ToolHandler,
+		parameters: T,
+		handler: (args: z.infer<T>) => string | Promise<string>,
 	): void {
 		const jsonSchema = z.toJSONSchema(parameters);
 		this._registeredTools.set(name, {
 			name,
 			description,
 			parameters: jsonSchema,
-			handler,
+			handler: handler as ToolHandler,
 		});
 	}
 

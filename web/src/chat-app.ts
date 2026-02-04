@@ -88,13 +88,7 @@ export class ChatApp extends LitElement {
 	private _handleDefineTool = (e: Event) => {
 		const event = e as DefineToolEvent;
 		const { name, description, parameters, handler } = event.detail;
-		this._agentElement.registerTool(
-			name,
-			description,
-			// biome-ignore lint/suspicious/noExplicitAny: Parameters come from external define-tool event
-			parameters as any,
-			handler,
-		);
+		this._agentElement.registerTool(name, description, parameters, handler);
 	};
 
 	connectedCallback() {

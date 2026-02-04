@@ -1,4 +1,5 @@
 import type { Message } from "@ag-ui/core";
+import type { z } from "zod";
 import type { ToolHandler } from "./tool.js";
 
 export interface AgUiMessagesChangedEvent
@@ -31,10 +32,20 @@ export interface AgUiToolCallErrorEvent
 		error: unknown;
 	}> {}
 
-export interface DefineToolEvent
-	extends CustomEvent<{
-		name: string;
-		description: string;
-		parameters: unknown; // ZodType
-		handler: ToolHandler;
-	}> {}
+/**
+ * Detail payload for DefineToolEvent.
+ * Generic over the Zod schema type to ensure handler receives correctly typed args.
+ */
+export interface DefineToolEventDetail<T extends z.ZodTypeAny = z.ZodTypeAny> {
+	name: string;
+	description: string;
+	parameters: T;
+	handler: ToolHandler<z.infer<T>>;
+}
+
+/**
+ * Event dispatched to register a tool with ag-ui-agent.
+ * The generic parameter ensures type safety between schema and handler.
+ */
+export interface DefineToolEvent<T extends z.ZodTypeAny = z.ZodTypeAny>
+	extends CustomEvent<DefineToolEventDetail<T>> {}
