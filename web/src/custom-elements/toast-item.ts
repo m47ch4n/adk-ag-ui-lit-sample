@@ -146,6 +146,30 @@ export class ToastItem extends LitElement {
 				font-size: var(--chat-font-size-sm);
 				box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 				animation: slide-in 0.2s ease-out;
+
+				&.info {
+					background: var(--chat-surface-secondary, #f0f4f8);
+					border: 1px solid var(--chat-border-color, #d0d7de);
+					color: var(--chat-text-primary, #1f2328);
+				}
+
+				&.error {
+					background: var(--chat-error-bg, #ffebe9);
+					border: 1px solid var(--chat-error-border, #ff8182);
+					color: var(--chat-error-text, #cf222e);
+				}
+
+				&.warning {
+					background: #fff8c5;
+					border: 1px solid #d4a72c;
+					color: #9a6700;
+				}
+
+				&.success {
+					background: #dafbe1;
+					border: 1px solid #4ac26b;
+					color: #1a7f37;
+				}
 			}
 
 			@keyframes slide-in {
@@ -157,30 +181,6 @@ export class ToastItem extends LitElement {
 					opacity: 1;
 					transform: translateY(0);
 				}
-			}
-
-			.toast.info {
-				background: var(--chat-surface-secondary, #f0f4f8);
-				border: 1px solid var(--chat-border-color, #d0d7de);
-				color: var(--chat-text-primary, #1f2328);
-			}
-
-			.toast.error {
-				background: var(--chat-error-bg, #ffebe9);
-				border: 1px solid var(--chat-error-border, #ff8182);
-				color: var(--chat-error-text, #cf222e);
-			}
-
-			.toast.warning {
-				background: #fff8c5;
-				border: 1px solid #d4a72c;
-				color: #9a6700;
-			}
-
-			.toast.success {
-				background: #dafbe1;
-				border: 1px solid #4ac26b;
-				color: #1a7f37;
 			}
 
 			.icon {
@@ -213,16 +213,16 @@ export class ToastItem extends LitElement {
 				cursor: pointer;
 				opacity: 0.7;
 				transition: opacity 0.15s, background 0.15s;
-			}
 
-			.close-button:hover {
-				opacity: 1;
-				background: rgba(0, 0, 0, 0.1);
-			}
+				&:hover {
+					opacity: 1;
+					background: rgba(0, 0, 0, 0.1);
+				}
 
-			.close-button:focus-visible {
-				outline: 2px solid currentColor;
-				outline-offset: 2px;
+				&:focus-visible {
+					outline: 2px solid currentColor;
+					outline-offset: 2px;
+				}
 			}
 		`,
 	];

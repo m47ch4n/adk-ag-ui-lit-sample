@@ -89,30 +89,30 @@ export class ToastManager extends LitElement {
 				gap: var(--chat-spacing-sm);
 				max-width: 400px;
 				padding: var(--chat-spacing-lg);
-			}
 
-			.toast-container.top-right {
-				position: fixed;
-				top: 0;
-				right: 0;
-			}
+				&.top-right {
+					position: fixed;
+					top: 0;
+					right: 0;
+				}
 
-			.toast-container.top-left {
-				position: fixed;
-				top: 0;
-				left: 0;
-			}
+				&.top-left {
+					position: fixed;
+					top: 0;
+					left: 0;
+				}
 
-			.toast-container.bottom-right {
-				position: fixed;
-				bottom: 0;
-				right: 0;
-			}
+				&.bottom-right {
+					position: fixed;
+					bottom: 0;
+					right: 0;
+				}
 
-			.toast-container.bottom-left {
-				position: fixed;
-				bottom: 0;
-				left: 0;
+				&.bottom-left {
+					position: fixed;
+					bottom: 0;
+					left: 0;
+				}
 			}
 
 			.toast-live-region {

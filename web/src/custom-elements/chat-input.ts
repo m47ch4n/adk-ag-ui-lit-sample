@@ -110,91 +110,92 @@ export class ChatInput extends LitElement {
 		chatTokens,
 		a11yStyles,
 		css`
-    :host {
-      display: block;
-    }
+			:host {
+				display: block;
+			}
 
-    .input-form {
-      display: flex;
-      gap: var(--chat-spacing-md);
-      padding: var(--chat-spacing-lg) var(--chat-spacing-xl) var(--chat-spacing-xl);
-      background: var(--chat-surface-primary);
-      border-top: 1px solid var(--chat-border-secondary);
-      align-items: center;
-    }
+			.input-form {
+				display: flex;
+				gap: var(--chat-spacing-md);
+				padding: var(--chat-spacing-lg) var(--chat-spacing-xl)
+					var(--chat-spacing-xl);
+				background: var(--chat-surface-primary);
+				border-top: 1px solid var(--chat-border-secondary);
+				align-items: center;
+			}
 
-    .input-wrapper {
-      flex: 1;
-      position: relative;
-    }
+			.input-wrapper {
+				flex: 1;
+				position: relative;
+			}
 
-    textarea {
-      width: 100%;
-      padding: var(--chat-spacing-md) var(--chat-spacing-lg);
-      border: 1px solid var(--chat-input-border);
-      border-radius: var(--chat-radius-lg);
-      background: var(--chat-input-bg);
-      color: var(--chat-input-text);
-      font-size: var(--chat-font-size-base);
-      font-family: var(--chat-font-family);
-      line-height: var(--chat-line-height-normal);
-      resize: none;
-      min-height: 1.5rem;
-      max-height: 150px;
-      box-sizing: border-box;
-      transition: border-color 0.2s, background 0.2s;
-    }
+			textarea {
+				width: 100%;
+				padding: var(--chat-spacing-md) var(--chat-spacing-lg);
+				border: 1px solid var(--chat-input-border);
+				border-radius: var(--chat-radius-lg);
+				background: var(--chat-input-bg);
+				color: var(--chat-input-text);
+				font-size: var(--chat-font-size-base);
+				font-family: var(--chat-font-family);
+				line-height: var(--chat-line-height-normal);
+				resize: none;
+				min-height: 1.5rem;
+				max-height: 150px;
+				box-sizing: border-box;
+				transition: border-color 0.2s, background 0.2s;
 
-    textarea::placeholder {
-      color: var(--chat-input-placeholder);
-    }
+				&::placeholder {
+					color: var(--chat-input-placeholder);
+				}
 
-    textarea:focus {
-      outline: none;
-      border-color: var(--chat-input-border-focus);
-      background: var(--chat-input-bg-focus);
-    }
+				&:focus {
+					outline: none;
+					border-color: var(--chat-input-border-focus);
+					background: var(--chat-input-bg-focus);
+				}
 
-    textarea:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
+				&:disabled {
+					opacity: 0.5;
+					cursor: not-allowed;
+				}
+			}
 
-    button {
-      width: 2.5rem;
-      height: 2.5rem;
-      padding: 0;
-      background: var(--chat-button-bg);
-      color: var(--chat-button-text);
-      border: none;
-      border-radius: var(--chat-radius-full);
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: opacity 0.2s;
-      flex-shrink: 0;
-    }
+			button {
+				width: 2.5rem;
+				height: 2.5rem;
+				padding: 0;
+				background: var(--chat-button-bg);
+				color: var(--chat-button-text);
+				border: none;
+				border-radius: var(--chat-radius-full);
+				cursor: pointer;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				transition: opacity 0.2s;
+				flex-shrink: 0;
 
-    button:hover:not(:disabled) {
-      opacity: 0.8;
-    }
+				&:hover:not(:disabled) {
+					opacity: 0.8;
+				}
 
-    button:active:not(:disabled) {
-      opacity: 0.7;
-    }
+				&:active:not(:disabled) {
+					opacity: 0.7;
+				}
 
-    button:disabled {
-      background: var(--chat-button-disabled-bg);
-      color: var(--chat-button-disabled-text);
-      cursor: not-allowed;
-    }
+				&:disabled {
+					background: var(--chat-button-disabled-bg);
+					color: var(--chat-button-disabled-text);
+					cursor: not-allowed;
+				}
 
-    button svg {
-      width: 1.125rem;
-      height: 1.125rem;
-    }
-  `,
+				& svg {
+					width: 1.125rem;
+					height: 1.125rem;
+				}
+			}
+		`,
 	];
 }
 

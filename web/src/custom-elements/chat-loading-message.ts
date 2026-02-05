@@ -35,30 +35,30 @@ export class ChatLoadingMessage extends LitElement {
 		chatMessageBaseStyles,
 		a11yStyles,
 		css`
-      .bubble {
-        color: var(--chat-text-muted);
-      }
+			.bubble {
+				color: var(--chat-text-muted);
 
-      .bubble::after {
-        content: "";
-        display: inline-block;
-        animation: dots 1.4s infinite;
-      }
+				&::after {
+					content: "";
+					display: inline-block;
+					animation: dots 1.4s infinite;
+				}
+			}
 
-      @keyframes dots {
-        0%,
-        20% {
-          content: ".";
-        }
-        40% {
-          content: "..";
-        }
-        60%,
-        100% {
-          content: "...";
-        }
-      }
-    `,
+			@keyframes dots {
+				0%,
+				20% {
+					content: ".";
+				}
+				40% {
+					content: "..";
+				}
+				60%,
+				100% {
+					content: "...";
+				}
+			}
+		`,
 	];
 }
 
