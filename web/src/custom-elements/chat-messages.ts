@@ -84,73 +84,73 @@ export class ChatMessages extends LitElement {
 	static styles = [
 		chatTokens,
 		css`
-    :host {
-      display: block;
-      flex: 1;
-      min-height: 0;
-    }
+			:host {
+				display: block;
+				flex: 1;
+				min-height: 0;
+			}
 
-    .messages {
-      height: 100%;
-      overflow-y: auto;
-      padding: var(--chat-spacing-2xl) var(--chat-spacing-xl);
-      box-sizing: border-box;
-      display: flex;
-      flex-direction: column;
-      gap: var(--chat-spacing-xl);
-    }
+			.messages {
+				height: 100%;
+				overflow-y: auto;
+				padding: var(--chat-spacing-2xl) var(--chat-spacing-xl);
+				box-sizing: border-box;
+				display: flex;
+				flex-direction: column;
+				gap: var(--chat-spacing-xl);
 
-    .messages::-webkit-scrollbar {
-      width: 4px;
-    }
+				&::-webkit-scrollbar {
+					width: 4px;
+				}
 
-    .messages::-webkit-scrollbar-track {
-      background: transparent;
-    }
+				&::-webkit-scrollbar-track {
+					background: transparent;
+				}
 
-    .messages::-webkit-scrollbar-thumb {
-      background: var(--chat-scrollbar-thumb);
-      border-radius: 2px;
-    }
+				&::-webkit-scrollbar-thumb {
+					background: var(--chat-scrollbar-thumb);
+					border-radius: 2px;
 
-    .messages::-webkit-scrollbar-thumb:hover {
-      background: var(--chat-scrollbar-thumb-hover);
-    }
+					&:hover {
+						background: var(--chat-scrollbar-thumb-hover);
+					}
+				}
+			}
 
-    .empty-state {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      color: var(--chat-empty-text);
-      gap: var(--chat-spacing-md);
-    }
+			.empty-state {
+				flex: 1;
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				justify-content: center;
+				color: var(--chat-empty-text);
+				gap: var(--chat-spacing-md);
 
-    .empty-icon {
-      font-size: 2rem;
-      opacity: 0.4;
-    }
+				& p {
+					margin: 0;
+					font-size: var(--chat-font-size-sm);
+					font-weight: 400;
+				}
+			}
 
-    .empty-state p {
-      margin: 0;
-      font-size: var(--chat-font-size-sm);
-      font-weight: 400;
-    }
+			.empty-icon {
+				font-size: 2rem;
+				opacity: 0.4;
+			}
 
-    .message-list {
-      list-style: none;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      flex-direction: column;
-      gap: var(--chat-spacing-xl);
-    }
+			.message-list {
+				list-style: none;
+				margin: 0;
+				padding: 0;
+				display: flex;
+				flex-direction: column;
+				gap: var(--chat-spacing-xl);
 
-    .message-list li {
-      display: block;
-    }
-  `,
+				& li {
+					display: block;
+				}
+			}
+		`,
 	];
 }
 
