@@ -1,7 +1,7 @@
 import type { z } from "zod";
 
 export type ToolHandler<T = Record<string, unknown>> = (
-	args: T,
+  args: T,
 ) => string | Promise<string>;
 
 /**
@@ -9,10 +9,10 @@ export type ToolHandler<T = Record<string, unknown>> = (
  * The handler's argument type is inferred from the Zod schema.
  */
 export interface ToolDefinition<T extends z.ZodTypeAny = z.ZodTypeAny> {
-	name: string;
-	description: string;
-	parameters: T;
-	handler: ToolHandler<z.infer<T>>;
+  name: string;
+  description: string;
+  parameters: T;
+  handler: ToolHandler<z.infer<T>>;
 }
 
 /**
@@ -30,9 +30,9 @@ export interface ToolDefinition<T extends z.ZodTypeAny = z.ZodTypeAny> {
  * ```
  */
 export function defineTool<T extends z.ZodTypeAny>(
-	definition: ToolDefinition<T>,
+  definition: ToolDefinition<T>,
 ): ToolDefinition<T> {
-	return definition;
+  return definition;
 }
 
 /**
@@ -40,20 +40,20 @@ export function defineTool<T extends z.ZodTypeAny>(
  * Used internally by ag-ui-agent.
  */
 export interface RegisteredTool {
-	name: string;
-	description: string;
-	parameters: unknown; // JSON Schema (converted from Zod)
-	handler: ToolHandler;
+  name: string;
+  description: string;
+  parameters: unknown; // JSON Schema (converted from Zod)
+  handler: ToolHandler;
 }
 
 export type ToolCallStatus = "pending" | "running" | "completed" | "error";
 
 export interface ToolCallDisplayData {
-	id: string;
-	toolCallId: string;
-	name: string;
-	args: Record<string, unknown>;
-	status: ToolCallStatus;
-	result?: string;
-	error?: string;
+  id: string;
+  toolCallId: string;
+  name: string;
+  args: Record<string, unknown>;
+  status: ToolCallStatus;
+  result?: string;
+  error?: string;
 }

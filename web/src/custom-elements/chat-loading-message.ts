@@ -7,19 +7,23 @@ import type { MessagePosition, MessageVariant } from "../types/index.js";
 
 @customElement("chat-loading-message")
 export class ChatLoadingMessage extends LitElement {
-	@property({ type: String })
-	position: MessagePosition = "left";
+  @property({ type: String })
+  position: MessagePosition = "left";
 
-	@property({ type: String })
-	variant: MessageVariant = "secondary";
+  @property({ type: String })
+  variant: MessageVariant = "secondary";
 
-	@property({ type: String })
-	avatar = "";
+  @property({ type: String })
+  avatar = "";
 
-	render() {
-		return html`
-      <div part="message" class="message ${this.position} ${this.variant}"
-           role="status" aria-label="Assistant is typing">
+  render() {
+    return html`
+      <div
+        part="message"
+        class="message ${this.position} ${this.variant}"
+        role="status"
+        aria-label="Assistant is typing"
+      >
         <div part="avatar" class="avatar" aria-hidden="true">
           <slot name="avatar">${this.avatar}</slot>
         </div>
@@ -28,42 +32,42 @@ export class ChatLoadingMessage extends LitElement {
         </div>
       </div>
     `;
-	}
+  }
 
-	static styles = [
-		chatTokens,
-		chatMessageBaseStyles,
-		a11yStyles,
-		css`
-			.bubble {
-				color: var(--chat-text-muted);
+  static styles = [
+    chatTokens,
+    chatMessageBaseStyles,
+    a11yStyles,
+    css`
+      .bubble {
+        color: var(--chat-text-muted);
 
-				&::after {
-					content: "";
-					display: inline-block;
-					animation: dots 1.4s infinite;
-				}
-			}
+        &::after {
+          content: "";
+          display: inline-block;
+          animation: dots 1.4s infinite;
+        }
+      }
 
-			@keyframes dots {
-				0%,
-				20% {
-					content: ".";
-				}
-				40% {
-					content: "..";
-				}
-				60%,
-				100% {
-					content: "...";
-				}
-			}
-		`,
-	];
+      @keyframes dots {
+        0%,
+        20% {
+          content: ".";
+        }
+        40% {
+          content: "..";
+        }
+        60%,
+        100% {
+          content: "...";
+        }
+      }
+    `,
+  ];
 }
 
 declare global {
-	interface HTMLElementTagNameMap {
-		"chat-loading-message": ChatLoadingMessage;
-	}
+  interface HTMLElementTagNameMap {
+    "chat-loading-message": ChatLoadingMessage;
+  }
 }

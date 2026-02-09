@@ -5,68 +5,70 @@ import { chatTokens } from "../styles/tokens.js";
 
 @customElement("chat-input")
 export class ChatInput extends LitElement {
-	static shadowRootOptions = {
-		...LitElement.shadowRootOptions,
-		delegatesFocus: true,
-	};
+  static shadowRootOptions = {
+    ...LitElement.shadowRootOptions,
+    delegatesFocus: true,
+  };
 
-	@property({ type: Boolean })
-	disabled = false;
+  @property({ type: Boolean })
+  disabled = false;
 
-	@property({ type: String })
-	placeholder = "Type a message...";
+  @property({ type: String })
+  placeholder = "Type a message...";
 
-	@property({ type: String })
-	label = "Message";
+  @property({ type: String })
+  label = "Message";
 
-	@state()
-	private value = "";
+  @state()
+  private value = "";
 
-	@state()
-	private isComposing = false;
+  @state()
+  private isComposing = false;
 
-	private handleSubmit(e: Event) {
-		e.preventDefault();
-		if (this.value.trim() && !this.disabled) {
-			this.dispatchEvent(
-				new CustomEvent("send", {
-					detail: { message: this.value },
-					bubbles: true,
-					composed: true,
-				}),
-			);
-			this.value = "";
-		}
-	}
+  private handleSubmit(e: Event) {
+    e.preventDefault();
+    if (this.value.trim() && !this.disabled) {
+      this.dispatchEvent(
+        new CustomEvent("send", {
+          detail: { message: this.value },
+          bubbles: true,
+          composed: true,
+        }),
+      );
+      this.value = "";
+    }
+  }
 
-	private handleInput(e: Event) {
-		this.value = (e.target as HTMLTextAreaElement).value;
-	}
+  private handleInput(e: Event) {
+    this.value = (e.target as HTMLTextAreaElement).value;
+  }
 
-	private handleCompositionStart() {
-		this.isComposing = true;
-	}
+  private handleCompositionStart() {
+    this.isComposing = true;
+  }
 
-	private handleCompositionEnd() {
-		// Defer flag reset to handle Safari where compositionend fires before keydown.
-		setTimeout(() => {
-			this.isComposing = false;
-		}, 100);
-	}
+  private handleCompositionEnd() {
+    // Defer flag reset to handle Safari where compositionend fires before keydown.
+    setTimeout(() => {
+      this.isComposing = false;
+    }, 100);
+  }
 
-	private handleKeyDown(e: KeyboardEvent) {
-		if (e.key === "Enter" && !e.shiftKey && !this.isComposing) {
-			e.preventDefault();
-			this.handleSubmit(e);
-		}
-	}
+  private handleKeyDown(e: KeyboardEvent) {
+    if (e.key === "Enter" && !e.shiftKey && !this.isComposing) {
+      e.preventDefault();
+      this.handleSubmit(e);
+    }
+  }
 
-	render() {
-		return html`
+  render() {
+    return html`
       <form part="form" class="input-form" @submit=${this.handleSubmit}>
         <slot name="prefix"></slot>
         <div part="input-wrapper" class="input-wrapper">
-          <label for="chat-input-field" class="visually-hidden">${this.label}</label>
+          <label for="chat-input-field" class="visually-hidden">
+            ${this.label}
+          </label>
           <textarea
             id="chat-input-field"
             part="input"
@@ -80,10 +82,17 @@ export class ChatInput extends LitElement {
             ?disabled=${this.disabled}
             aria-describedby="input-hint"
           ></textarea>
-          <span id="input-hint" class="visually-hidden">Press Enter to send, Shift+Enter for new line</span>
+          <span id="input-hint" class="visually-hidden">
+            Press Enter to send, Shift+Enter for new line
+          </span>
         </div>
         <slot name="suffix">
-          <button part="send-button" type="submit" ?disabled=${this.disabled || !this.value.trim()} aria-label="Send message">
+          <button
+            part="send-button"
+            type="submit"
+            ?disabled=${this.disabled || !this.value.trim()}
+            aria-label="Send message"
+          >
             <slot name="send-icon">
               <svg
                 width="20"
@@ -104,103 +113,105 @@ export class ChatInput extends LitElement {
         </slot>
       </form>
     `;
-	}
+  }
 
-	static styles = [
-		chatTokens,
-		a11yStyles,
-		css`
-			:host {
-				display: block;
-			}
+  static styles = [
+    chatTokens,
+    a11yStyles,
+    css`
+      :host {
+        display: block;
+      }
 
-			.input-form {
-				display: flex;
-				gap: var(--chat-spacing-md);
-				padding: var(--chat-spacing-lg) var(--chat-spacing-xl)
-					var(--chat-spacing-xl);
-				background: var(--chat-surface-primary);
-				border-top: 1px solid var(--chat-border-secondary);
-				align-items: center;
-			}
+      .input-form {
+        display: flex;
+        gap: var(--chat-spacing-md);
+        padding: var(--chat-spacing-lg) var(--chat-spacing-xl)
+          var(--chat-spacing-xl);
+        background: var(--chat-surface-primary);
+        border-top: 1px solid var(--chat-border-secondary);
+        align-items: center;
+      }
 
-			.input-wrapper {
-				flex: 1;
-				position: relative;
-			}
+      .input-wrapper {
+        flex: 1;
+        position: relative;
+      }
 
-			textarea {
-				width: 100%;
-				padding: var(--chat-spacing-md) var(--chat-spacing-lg);
-				border: 1px solid var(--chat-input-border);
-				border-radius: var(--chat-radius-lg);
-				background: var(--chat-input-bg);
-				color: var(--chat-input-text);
-				font-size: var(--chat-font-size-base);
-				font-family: var(--chat-font-family);
-				line-height: var(--chat-line-height-normal);
-				resize: none;
-				min-height: 1.5rem;
-				max-height: 150px;
-				box-sizing: border-box;
-				transition: border-color 0.2s, background 0.2s;
+      textarea {
+        width: 100%;
+        padding: var(--chat-spacing-md) var(--chat-spacing-lg);
+        border: 1px solid var(--chat-input-border);
+        border-radius: var(--chat-radius-lg);
+        background: var(--chat-input-bg);
+        color: var(--chat-input-text);
+        font-size: var(--chat-font-size-base);
+        font-family: var(--chat-font-family);
+        line-height: var(--chat-line-height-normal);
+        resize: none;
+        min-height: 1.5rem;
+        max-height: 150px;
+        box-sizing: border-box;
+        transition:
+          border-color 0.2s,
+          background 0.2s;
 
-				&::placeholder {
-					color: var(--chat-input-placeholder);
-				}
+        &::placeholder {
+          color: var(--chat-input-placeholder);
+        }
 
-				&:focus {
-					outline: none;
-					border-color: var(--chat-input-border-focus);
-					background: var(--chat-input-bg-focus);
-				}
+        &:focus {
+          outline: none;
+          border-color: var(--chat-input-border-focus);
+          background: var(--chat-input-bg-focus);
+        }
 
-				&:disabled {
-					opacity: 0.5;
-					cursor: not-allowed;
-				}
-			}
+        &:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+      }
 
-			button {
-				width: 2.5rem;
-				height: 2.5rem;
-				padding: 0;
-				background: var(--chat-button-bg);
-				color: var(--chat-button-text);
-				border: none;
-				border-radius: var(--chat-radius-full);
-				cursor: pointer;
-				display: flex;
-				align-items: center;
-				justify-content: center;
-				transition: opacity 0.2s;
-				flex-shrink: 0;
+      button {
+        width: 2.5rem;
+        height: 2.5rem;
+        padding: 0;
+        background: var(--chat-button-bg);
+        color: var(--chat-button-text);
+        border: none;
+        border-radius: var(--chat-radius-full);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: opacity 0.2s;
+        flex-shrink: 0;
 
-				&:hover:not(:disabled) {
-					opacity: 0.8;
-				}
+        &:hover:not(:disabled) {
+          opacity: 0.8;
+        }
 
-				&:active:not(:disabled) {
-					opacity: 0.7;
-				}
+        &:active:not(:disabled) {
+          opacity: 0.7;
+        }
 
-				&:disabled {
-					background: var(--chat-button-disabled-bg);
-					color: var(--chat-button-disabled-text);
-					cursor: not-allowed;
-				}
+        &:disabled {
+          background: var(--chat-button-disabled-bg);
+          color: var(--chat-button-disabled-text);
+          cursor: not-allowed;
+        }
 
-				& svg {
-					width: 1.125rem;
-					height: 1.125rem;
-				}
-			}
-		`,
-	];
+        & svg {
+          width: 1.125rem;
+          height: 1.125rem;
+        }
+      }
+    `,
+  ];
 }
 
 declare global {
-	interface HTMLElementTagNameMap {
-		"chat-input": ChatInput;
-	}
+  interface HTMLElementTagNameMap {
+    "chat-input": ChatInput;
+  }
 }

@@ -9,7 +9,7 @@ resolution-markers = [
 [[package]]
 name = "ag-ui-adk"
 version = "0.4.2"
-source = { git = "https://github.com/ag-ui-protocol/ag-ui.git?subdirectory=integrations%2Fadk-middleware%2Fpython#ab061db901a7d3388701bfef2b021c2362b92ee1" }
+source = { git = "https://github.com/ag-ui-protocol/ag-ui.git?subdirectory=integrations%2Fadk-middleware%2Fpython#f2ebe6b1e49d04512602d3f47768bd6bfc8dd655" }
 dependencies = [
     { name = "ag-ui-protocol" },
     { name = "aiohttp" },

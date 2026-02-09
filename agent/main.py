@@ -2,6 +2,8 @@ import logging
 
 from fastapi import FastAPI
 from google.adk.apps import App
+from google.adk.agents import RunConfig
+from google.adk.agents.run_config import StreamingMode
 from ag_ui_adk import ADKAgent, add_adk_fastapi_endpoint
 
 from sample_agent.agent import root_agent
@@ -22,6 +24,20 @@ adk_app = App(
 
 agent = ADKAgent.from_app(
     adk_app,
+    # Disable SSE streaming to work around partial FunctionCall events not
+    # being persisted to the session (google/adk-python#4311). With
+    # StreamingMode.SSE (the default), Gemini emits FunctionCalls in partial
+    # events which the ADK runner skips when persisting. The ag-ui-adk
+    # middleware then detects LRO in the partial event and returns early, so
+    # the aggregated event is never processed, causing a ValueError in
+    # _rearrange_events_for_latest_function_response. StreamingMode.NONE
+    # ensures FunctionCalls only appear in non-partial events that are always
+    # persisted. See also:
+    # https://github.com/ag-ui-protocol/ag-ui/blob/main/integrations/adk-middleware/python/STREAMING_FC_ARGS_RECONSTRUCTION.md
+    run_config_factory=lambda input: RunConfig(
+        streaming_mode=StreamingMode.NONE,
+        save_input_blobs_as_artifacts=True,
+    ),
     user_id_extractor=lambda input: input.state.get("headers", {}).get(
         "user_id", "anonymous"
     ),

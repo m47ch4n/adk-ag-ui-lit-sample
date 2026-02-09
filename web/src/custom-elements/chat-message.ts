@@ -7,22 +7,27 @@ import "./markdown-content.js";
 
 @customElement("chat-message")
 export class ChatMessage extends LitElement {
-	@property({ type: String })
-	position: MessagePosition = "left";
+  @property({ type: String })
+  position: MessagePosition = "left";
 
-	@property({ type: String })
-	variant: MessageVariant = "secondary";
+  @property({ type: String })
+  variant: MessageVariant = "secondary";
 
-	@property({ type: String })
-	avatar = "";
+  @property({ type: String })
+  avatar = "";
 
-	@property({ type: String })
-	content = "";
+  @property({ type: String })
+  content = "";
 
-	render() {
-		return html`
-      <article part="message" class="message ${this.position} ${this.variant}"
-               aria-label="${this.position === "right" ? "Your message" : "Assistant message"}">
+  render() {
+    return html`
+      <article
+        part="message"
+        class="message ${this.position} ${this.variant}"
+        aria-label="${this.position === "right"
+          ? "Your message"
+          : "Assistant message"}"
+      >
         <div part="avatar" class="avatar" aria-hidden="true">
           <slot name="avatar">${this.avatar}</slot>
         </div>
@@ -33,13 +38,13 @@ export class ChatMessage extends LitElement {
         </div>
       </article>
     `;
-	}
+  }
 
-	static styles = [chatTokens, chatMessageBaseStyles];
+  static styles = [chatTokens, chatMessageBaseStyles];
 }
 
 declare global {
-	interface HTMLElementTagNameMap {
-		"chat-message": ChatMessage;
-	}
+  interface HTMLElementTagNameMap {
+    "chat-message": ChatMessage;
+  }
 }
