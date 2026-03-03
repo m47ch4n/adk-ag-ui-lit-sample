@@ -6,6 +6,6 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "google-adk>=1.23.0",
-    "ag-ui-adk @ git+https://github.com/ag-ui-protocol/ag-ui.git#subdirectory=integrations/adk-middleware/python",
+    "ag-ui-adk>=0.5.0",
     "uvicorn[standard]>=0.34.0",
 ]
