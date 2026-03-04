@@ -22,8 +22,8 @@ export class ChatInput extends LitElement {
   @state()
   private value = "";
 
-  @state()
   private isComposing = false;
+  private justComposed = false;
 
   private handleSubmit(e: Event) {
     e.preventDefault();
@@ -48,17 +48,27 @@ export class ChatInput extends LitElement {
   }
 
   private handleCompositionEnd() {
-    // Defer flag reset to handle Safari where compositionend fires before keydown.
+    this.isComposing = false;
+    this.justComposed = true;
+
     setTimeout(() => {
-      this.isComposing = false;
+      this.justComposed = false;
     }, 100);
   }
 
   private handleKeyDown(e: KeyboardEvent) {
-    if (e.key === "Enter" && !e.shiftKey && !this.isComposing) {
+    if (e.isComposing || this.isComposing || this.justComposed) {
+      return;
+    }
+
+    if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       this.handleSubmit(e);
     }
+  }
+
+  private handleKeyUp() {
+    this.justComposed = false;
   }
 
   render() {
@@ -77,6 +87,7 @@ export class ChatInput extends LitElement {
             .value=${this.value}
             @input=${this.handleInput}
             @keydown=${this.handleKeyDown}
+            @keyup=${this.handleKeyUp}
             @compositionstart=${this.handleCompositionStart}
             @compositionend=${this.handleCompositionEnd}
             placeholder=${this.placeholder}
