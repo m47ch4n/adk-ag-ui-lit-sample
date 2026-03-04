@@ -12,8 +12,8 @@
     "format:check": "prettier --check src"
   },
   "dependencies": {
-    "@ag-ui/client": "^0.0.43",
-    "@ag-ui/core": "^0.0.43",
+    "@ag-ui/client": "^0.0.46",
+    "@ag-ui/core": "^0.0.46",
     "dompurify": "^3.3.1",
     "lit": "^3.3.1",
     "marked": "^17.0.1",

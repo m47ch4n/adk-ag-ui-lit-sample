@@ -58,6 +58,7 @@ export class ChatMessages extends LitElement {
                         .variant=${msg.variant}
                         .avatar=${msg.avatar}
                         .content=${msg.content}
+                        .reasoning=${msg.reasoning}
                       ></chat-message>
                     </li>
                   `,
@@ -70,6 +71,7 @@ export class ChatMessages extends LitElement {
                 .position=${this.loading.position}
                 .variant=${this.loading.variant}
                 .avatar=${this.loading.avatar}
+                .reasoning=${this.loading.reasoning}
               ></chat-loading-message>
             `
           : null}

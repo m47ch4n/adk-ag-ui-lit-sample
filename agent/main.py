@@ -1,7 +1,10 @@
 import logging
 
+import warnings
+
 from fastapi import FastAPI
 from google.adk.apps import App
+from google.adk.apps.app import ResumabilityConfig
 from ag_ui_adk import ADKAgent, add_adk_fastapi_endpoint
 
 from sample_agent.agent import root_agent
@@ -15,13 +18,20 @@ logging.getLogger("event_translator").setLevel(logging.INFO)
 logging.getLogger("session_manager").setLevel(logging.WARNING)
 logging.getLogger("endpoint").setLevel(logging.ERROR)
 
+# Suppress experimental warning for ResumabilityConfig
+warnings.filterwarnings("ignore", message=".*ResumabilityConfig.*")
+
 adk_app = App(
     name="sample_app",
     root_agent=root_agent,
+    resumability_config=ResumabilityConfig(is_resumable=True),
 )
 
 agent = ADKAgent.from_app(
     adk_app,
+    # streaming_function_call_arguments requires Vertex AI (not Google AI Studio)
+    # and google-adk >= 1.24.0. Enable when using Vertex AI:
+    # streaming_function_call_arguments=True,
     user_id_extractor=lambda input: input.state.get("headers", {}).get(
         "user_id", "anonymous"
     ),

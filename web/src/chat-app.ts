@@ -11,6 +11,8 @@ import { chatTokens } from "./styles/tokens.js";
 import { registerHelloTool } from "./tools/hello-tool.js";
 import type {
   AgUiMessagesChangedEvent,
+  AgUiReasoningContentEvent,
+  AgUiReasoningEndEvent,
   AgUiRunFailedEvent,
   AgUiRunFinalizedEvent,
   AgUiRunStartedEvent,
@@ -21,8 +23,6 @@ import type {
   ChatMessageData,
   DefineToolEvent,
 } from "./types/index.js";
-
-type DisplayableRole = "user" | "assistant";
 
 @customElement("chat-app")
 export class ChatApp extends LitElement {
@@ -39,6 +39,9 @@ export class ChatApp extends LitElement {
   private _isRunning = false;
 
   @state()
+  private _reasoningContent = "";
+
+  @state()
   private _toasts: ToastData[] = [];
 
   private _handleMessagesChanged = (e: AgUiMessagesChangedEvent) => {
@@ -48,6 +51,7 @@ export class ChatApp extends LitElement {
 
   private _handleRunStarted = (_e: AgUiRunStartedEvent) => {
     this._isRunning = true;
+    this._reasoningContent = "";
     this._loading = {
       position: "left",
       variant: "secondary",
@@ -74,6 +78,14 @@ export class ChatApp extends LitElement {
   private _handleRunFinalized = (_e: AgUiRunFinalizedEvent) => {
     this._isRunning = false;
     this._loading = null;
+  };
+
+  private _handleReasoningContent = (e: AgUiReasoningContentEvent) => {
+    this._reasoningContent = e.detail.buffer;
+  };
+
+  private _handleReasoningEnd = (_e: AgUiReasoningEndEvent) => {
+    // Keep _reasoningContent for display; it will be reset on next run start
   };
 
   private _handleToolCallStart = (e: AgUiToolCallStartEvent) => {
@@ -113,19 +125,28 @@ export class ChatApp extends LitElement {
   }
 
   private _transformMessages(messages: Message[]): ChatMessageData[] {
-    console.log({ messages });
-    return messages
-      .filter(
-        (msg): msg is Message & { role: DisplayableRole } =>
-          msg.role === "user" || msg.role === "assistant",
-      )
-      .map((msg) => ({
+    const result: ChatMessageData[] = [];
+    let pendingReasoning: string | undefined;
+
+    for (const msg of messages) {
+      if (msg.role === "reasoning") {
+        pendingReasoning = this._getContentText(msg.content);
+        continue;
+      }
+      if (msg.role !== "user" && msg.role !== "assistant") continue;
+
+      result.push({
         id: msg.id,
         position: msg.role === "user" ? "right" : "left",
         variant: msg.role === "user" ? "primary" : "secondary",
         avatar: msg.role === "user" ? "U" : "A",
         content: this._getContentText(msg.content),
-      }));
+        reasoning: msg.role === "assistant" ? pendingReasoning : undefined,
+      });
+      pendingReasoning = undefined;
+    }
+
+    return result;
   }
 
   private _getContentText(content: Message["content"]): string {
@@ -157,6 +178,7 @@ export class ChatApp extends LitElement {
       position: "left",
       variant: "secondary",
       avatar: "A",
+      reasoning: this._reasoningContent || undefined,
     };
   }
 
@@ -191,6 +213,8 @@ export class ChatApp extends LitElement {
         @ag-ui-run-started=${this._handleRunStarted}
         @ag-ui-run-failed=${this._handleRunFailed}
         @ag-ui-run-finalized=${this._handleRunFinalized}
+        @ag-ui-reasoning-content=${this._handleReasoningContent}
+        @ag-ui-reasoning-end=${this._handleReasoningEnd}
         @ag-ui-tool-call-start=${this._handleToolCallStart}
         @ag-ui-tool-call-end=${this._handleToolCallEnd}
         @ag-ui-tool-call-error=${this._handleToolCallError}

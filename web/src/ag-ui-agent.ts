@@ -1,13 +1,22 @@
 import { type AgentSubscriber, HttpAgent } from "@ag-ui/client";
-import type { Message, Tool, ToolMessage, UserMessage } from "@ag-ui/core";
+import {
+  EventType,
+  type Message,
+  type Tool,
+  type ToolMessage,
+  type UserMessage,
+} from "@ag-ui/core";
 import { LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { z } from "zod";
 import type {
   AgUiMessagesChangedEvent,
+  AgUiReasoningContentEvent,
+  AgUiReasoningEndEvent,
   AgUiRunFailedEvent,
   AgUiRunFinalizedEvent,
   AgUiRunStartedEvent,
+  AgUiToolCallArgsEvent,
   AgUiToolCallEndEvent,
   AgUiToolCallErrorEvent,
   AgUiToolCallStartEvent,
@@ -32,6 +41,7 @@ export class AgUiAgent extends LitElement {
   private _abortController: AbortController | null = null;
   private _registeredTools: Map<string, RegisteredTool> = new Map();
   private _pendingToolResults: Promise<void>[] = [];
+  private _reasoningBuffer = "";
 
   get isRunning(): boolean {
     return this._agent?.isRunning ?? false;
@@ -126,6 +136,36 @@ export class AgUiAgent extends LitElement {
     });
 
     const subscriber: AgentSubscriber = {
+      onEvent: (params) => {
+        const { event } = params;
+        // Handle THINKING_* events (ag-ui-adk 0.5.0 emits these)
+        // and REASONING_* events (future ag-ui-adk versions) via onEvent
+        // to provide a unified reasoning event interface.
+        switch (event.type) {
+          case EventType.THINKING_START:
+          case EventType.REASONING_START:
+            this._reasoningBuffer = "";
+            this._dispatchEvent("ag-ui-reasoning-start", {});
+            break;
+          case EventType.THINKING_TEXT_MESSAGE_CONTENT:
+          case EventType.REASONING_MESSAGE_CONTENT: {
+            const delta = (event as { delta?: string }).delta ?? "";
+            this._reasoningBuffer += delta;
+            this._dispatchEvent("ag-ui-reasoning-content", {
+              delta,
+              buffer: this._reasoningBuffer,
+            } satisfies AgUiReasoningContentEvent["detail"]);
+            break;
+          }
+          case EventType.THINKING_END:
+          case EventType.REASONING_END:
+            this._dispatchEvent("ag-ui-reasoning-end", {
+              content: this._reasoningBuffer,
+            } satisfies AgUiReasoningEndEvent["detail"]);
+            this._reasoningBuffer = "";
+            break;
+        }
+      },
       onMessagesChanged: (params) => {
         this._dispatchEvent("ag-ui-messages-changed", {
           messages: params.messages,
@@ -148,6 +188,14 @@ export class AgUiAgent extends LitElement {
           toolCallId: params.event.toolCallId,
           toolCallName: params.event.toolCallName,
         } satisfies AgUiToolCallStartEvent["detail"]);
+      },
+      onToolCallArgsEvent: (params) => {
+        this._dispatchEvent("ag-ui-tool-call-args", {
+          toolCallId: params.event.toolCallId,
+          toolCallName: params.toolCallName,
+          delta: params.event.delta,
+          buffer: params.toolCallBuffer,
+        } satisfies AgUiToolCallArgsEvent["detail"]);
       },
       onToolCallEndEvent: (params) => {
         if (this._agent == null) return;

@@ -8,10 +8,12 @@ export interface ChatMessageData {
   variant: MessageVariant;
   avatar: string;
   content: string;
+  reasoning?: string;
 }
 
 export interface ChatLoadingData {
   position: MessagePosition;
   variant: MessageVariant;
   avatar: string;
+  reasoning?: string;
 }

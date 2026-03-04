@@ -16,19 +16,31 @@ export class ChatLoadingMessage extends LitElement {
   @property({ type: String })
   avatar = "";
 
+  @property({ type: String })
+  reasoning?: string;
+
   render() {
     return html`
       <div
         part="message"
         class="message ${this.position} ${this.variant}"
         role="status"
-        aria-label="Assistant is typing"
+        aria-label=${this.reasoning
+          ? "Assistant is thinking"
+          : "Assistant is typing"}
       >
         <div part="avatar" class="avatar" aria-hidden="true">
           <slot name="avatar">${this.avatar}</slot>
         </div>
         <div part="bubble" class="bubble">
-          <span class="visually-hidden">Loading response</span>
+          ${this.reasoning
+            ? html`
+                <details class="reasoning" open>
+                  <summary>Thinking...</summary>
+                  <div class="reasoning-content">${this.reasoning}</div>
+                </details>
+              `
+            : html`<span class="visually-hidden">Loading response</span>`}
         </div>
       </div>
     `;
@@ -39,7 +51,7 @@ export class ChatLoadingMessage extends LitElement {
     chatMessageBaseStyles,
     a11yStyles,
     css`
-      .bubble {
+      .bubble:not(:has(.reasoning)) {
         color: var(--chat-text-muted);
 
         &::after {
@@ -61,6 +73,27 @@ export class ChatLoadingMessage extends LitElement {
         100% {
           content: "...";
         }
+      }
+
+      .reasoning {
+        font-size: var(--chat-font-size-sm);
+
+        & summary {
+          cursor: pointer;
+          color: var(--chat-text-muted);
+          font-style: italic;
+          user-select: none;
+        }
+      }
+
+      .reasoning-content {
+        margin-top: var(--chat-spacing-sm);
+        padding: var(--chat-spacing-sm) var(--chat-spacing-md);
+        border-left: 2px solid var(--chat-border-secondary);
+        color: var(--chat-text-muted);
+        white-space: pre-wrap;
+        max-height: 200px;
+        overflow-y: auto;
       }
     `,
   ];

@@ -5,7 +5,7 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
-    "google-adk>=1.23.0",
+    "google-adk>=1.26.0",
     "ag-ui-adk>=0.5.0",
     "uvicorn[standard]>=0.34.0",
 ]
