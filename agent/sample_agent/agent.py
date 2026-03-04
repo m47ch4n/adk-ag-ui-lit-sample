@@ -3,8 +3,8 @@ from google.adk.agents.llm_agent import Agent
 from google.genai.types import GenerateContentConfig, ThinkingConfig
 
 root_agent = Agent(
-    name="root_agent",
-    model="gemini-3-flash-preview",
+    name="sample_agent",
+    model="gemini-3.1-flash-lite-preview",
     description="A helpful assistant for user questions.",
     instruction="Answer user questions to the best of your knowledge",
     generate_content_config=GenerateContentConfig(
