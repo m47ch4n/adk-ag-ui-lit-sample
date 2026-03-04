@@ -73,6 +73,7 @@ export class ChatInput extends LitElement {
             id="chat-input-field"
             part="input"
             rows="2"
+            autofocus
             .value=${this.value}
             @input=${this.handleInput}
             @keydown=${this.handleKeyDown}

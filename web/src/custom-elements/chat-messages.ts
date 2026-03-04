@@ -1,6 +1,5 @@
 import { css, html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
-import { repeat } from "lit/directives/repeat.js";
 import { chatTokens } from "../styles/tokens.js";
 import type { ChatLoadingData, ChatMessageData } from "../types/index.js";
 import "./chat-message.js";
@@ -14,18 +13,50 @@ export class ChatMessages extends LitElement {
   @property({ type: Object })
   loading: ChatLoadingData | null = null;
 
-  updated() {
-    this.scrollToBottom();
+  private _prevMessageCount = 0;
+
+  firstUpdated() {
+    this._prevMessageCount = this.messages.length;
   }
 
-  private scrollToBottom() {
-    const container = this.shadowRoot?.querySelector(".messages");
-    if (container) {
-      container.scrollTop = container.scrollHeight;
+  updated() {
+    const newCount = this.messages.length;
+    if (
+      newCount > this._prevMessageCount &&
+      this.messages[newCount - 1]?.position === "right"
+    ) {
+      const turns = this.shadowRoot?.querySelectorAll(".turn");
+      turns?.[turns.length - 1]?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
     }
+    this._prevMessageCount = newCount;
+  }
+
+  private _groupIntoTurns() {
+    const turns: { id: string; messages: ChatMessageData[] }[] = [];
+    let current: ChatMessageData[] = [];
+
+    for (const msg of this.messages) {
+      if (msg.position === "right") {
+        if (current.length > 0) {
+          turns.push({ id: current[0].id, messages: current });
+        }
+        current = [msg];
+      } else {
+        current.push(msg);
+      }
+    }
+    if (current.length > 0) {
+      turns.push({ id: current[0].id, messages: current });
+    }
+    return turns;
   }
 
   render() {
+    const turns = this._groupIntoTurns();
+
     return html`
       <section
         part="messages-container"
@@ -37,7 +68,7 @@ export class ChatMessages extends LitElement {
       >
         <slot name="header"></slot>
 
-        ${this.messages.length === 0
+        ${turns.length === 0
           ? html`
               <div part="empty-state" class="empty-state" role="status">
                 <slot name="empty">
@@ -46,13 +77,11 @@ export class ChatMessages extends LitElement {
                 </slot>
               </div>
             `
-          : html`
-              <ul class="message-list" role="list">
-                ${repeat(
-                  this.messages,
-                  (msg) => msg.id,
-                  (msg) => html`
-                    <li>
+          : turns.map(
+              (turn, i) => html`
+                <div class="turn">
+                  ${turn.messages.map(
+                    (msg) => html`
                       <chat-message
                         .position=${msg.position}
                         .variant=${msg.variant}
@@ -60,21 +89,21 @@ export class ChatMessages extends LitElement {
                         .content=${msg.content}
                         .reasoning=${msg.reasoning}
                       ></chat-message>
-                    </li>
-                  `,
-                )}
-              </ul>
-            `}
-        ${this.loading
-          ? html`
-              <chat-loading-message
-                .position=${this.loading.position}
-                .variant=${this.loading.variant}
-                .avatar=${this.loading.avatar}
-                .reasoning=${this.loading.reasoning}
-              ></chat-loading-message>
-            `
-          : null}
+                    `,
+                  )}
+                  ${i === turns.length - 1 && this.loading
+                    ? html`
+                        <chat-loading-message
+                          .position=${this.loading.position}
+                          .variant=${this.loading.variant}
+                          .avatar=${this.loading.avatar}
+                          .reasoning=${this.loading.reasoning}
+                        ></chat-loading-message>
+                      `
+                    : null}
+                </div>
+              `,
+            )}
 
         <slot name="footer"></slot>
       </section>
@@ -94,6 +123,7 @@ export class ChatMessages extends LitElement {
         height: 100%;
         overflow-y: auto;
         padding: var(--chat-spacing-2xl) var(--chat-spacing-xl);
+        scroll-padding-top: var(--chat-spacing-2xl);
         box-sizing: border-box;
         display: flex;
         flex-direction: column;
@@ -138,16 +168,13 @@ export class ChatMessages extends LitElement {
         opacity: 0.4;
       }
 
-      .message-list {
-        list-style: none;
-        margin: 0;
-        padding: 0;
+      .turn {
         display: flex;
         flex-direction: column;
         gap: var(--chat-spacing-xl);
 
-        & li {
-          display: block;
+        &:last-of-type:not(:first-of-type) {
+          flex: 1 0 100%;
         }
       }
     `,

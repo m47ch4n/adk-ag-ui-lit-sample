@@ -7,7 +7,7 @@ import "./markdown-content.js";
 
 @customElement("chat-message")
 export class ChatMessage extends LitElement {
-  @property({ type: String })
+  @property({ type: String, reflect: true })
   position: MessagePosition = "left";
 
   @property({ type: String })
