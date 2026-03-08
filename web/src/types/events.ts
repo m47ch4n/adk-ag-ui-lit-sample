@@ -57,6 +57,25 @@ export interface AgUiToolCallErrorEvent extends CustomEvent<{
   error: unknown;
 }> {}
 
+// --- State Events ---
+
+export interface AgUiStateSnapshotEvent extends CustomEvent<{
+  snapshot: Record<string, unknown>;
+}> {}
+
+export interface AgUiStateDeltaEvent extends CustomEvent<{
+  delta: unknown[];
+}> {}
+
+export interface AgUiStateChangedEvent extends CustomEvent<{
+  state: Record<string, unknown>;
+}> {}
+
+export interface AgUiCustomAgEvent extends CustomEvent<{
+  name: string;
+  value: unknown;
+}> {}
+
 /**
  * Detail payload for DefineToolEvent.
  * Generic over the Zod schema type to ensure handler receives correctly typed args.

@@ -1,11 +1,13 @@
 [project]
 name = "agent"
 version = "0.1.0"
-description = "Add your description here"
+description = "LT Slide Creator - ADK AG-UI sample with multi-agent architecture"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "google-adk>=1.26.0",
     "ag-ui-adk>=0.5.0",
     "uvicorn[standard]>=0.34.0",
+    "anthropic[vertex]>=0.55.0",
+    "jsonpatch>=1.33",
 ]
