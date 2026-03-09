@@ -117,12 +117,18 @@ export class CodeEditor extends LitElement {
 
     .editor-container {
       flex: 1;
-      overflow: auto;
+      min-height: 0;
+      overflow: hidden;
     }
 
     /* CodeMirror fills its container */
     .editor-container .cm-editor {
       height: 100%;
+      overflow: hidden;
+    }
+
+    .editor-container .cm-editor .cm-scroller {
+      overflow: auto;
     }
   `;
 }
