@@ -5,10 +5,11 @@ import type { AgUiAgent } from "./ag-ui-agent.js";
 import "./ag-ui-agent.js";
 import "./custom-elements/chat-input.js";
 import "./custom-elements/chat-messages.js";
+import "./custom-elements/code-editor.js";
+import "./custom-elements/slide-preview.js";
 import "./custom-elements/toast-manager.js";
 import type { ToastData } from "./custom-elements/toast-manager.js";
 import { chatTokens } from "./styles/tokens.js";
-import { registerHelloTool } from "./tools/hello-tool.js";
 import type {
   AgUiMessagesChangedEvent,
   AgUiReasoningContentEvent,
@@ -16,33 +17,29 @@ import type {
   AgUiRunFailedEvent,
   AgUiRunFinalizedEvent,
   AgUiRunStartedEvent,
-  AgUiToolCallEndEvent,
-  AgUiToolCallErrorEvent,
-  AgUiToolCallStartEvent,
+  AgUiStateChangedEvent,
   ChatLoadingData,
   ChatMessageData,
-  DefineToolEvent,
 } from "./types/index.js";
 
-@customElement("chat-app")
-export class ChatApp extends LitElement {
+@customElement("slide-app")
+export class SlideApp extends LitElement {
   @query("ag-ui-agent")
   private _agentElement!: AgUiAgent;
 
-  @state()
-  private _messages: ChatMessageData[] = [];
+  // Chat state
+  @state() private _messages: ChatMessageData[] = [];
+  @state() private _loading: ChatLoadingData | null = null;
+  @state() private _isRunning = false;
+  @state() private _reasoningContent = "";
+  @state() private _toasts: ToastData[] = [];
 
-  @state()
-  private _loading: ChatLoadingData | null = null;
+  // Slide state
+  @state() private _slidesMarkdown = "";
+  @state() private _slidesCss = "";
+  @state() private _currentSlide = 0;
 
-  @state()
-  private _isRunning = false;
-
-  @state()
-  private _reasoningContent = "";
-
-  @state()
-  private _toasts: ToastData[] = [];
+  // --- AG-UI Event Handlers ---
 
   private _handleMessagesChanged = (e: AgUiMessagesChangedEvent) => {
     this._messages = this._transformMessages(e.detail.messages);
@@ -52,11 +49,7 @@ export class ChatApp extends LitElement {
   private _handleRunStarted = (_e: AgUiRunStartedEvent) => {
     this._isRunning = true;
     this._reasoningContent = "";
-    this._loading = {
-      position: "left",
-      variant: "secondary",
-
-    };
+    this._loading = { position: "left", variant: "secondary" };
   };
 
   private _handleRunFailed = (e: AgUiRunFailedEvent) => {
@@ -65,9 +58,8 @@ export class ChatApp extends LitElement {
     if (
       e.detail.error instanceof Error &&
       e.detail.error.name === "AbortError"
-    ) {
+    )
       return;
-    }
     const message =
       e.detail.error instanceof Error
         ? e.detail.error.message
@@ -85,56 +77,61 @@ export class ChatApp extends LitElement {
   };
 
   private _handleReasoningEnd = (_e: AgUiReasoningEndEvent) => {
-    // Keep _reasoningContent for display; it will be reset on next run start
+    // Keep for display; reset on next run start
   };
 
-  private _handleToolCallStart = (e: AgUiToolCallStartEvent) => {
-    // WIP
-    console.log(e);
+  private _handleStateChanged = (e: AgUiStateChangedEvent) => {
+    const agentState = e.detail.state;
+    if (typeof agentState.slides_markdown === "string") {
+      this._slidesMarkdown = agentState.slides_markdown;
+    }
+    if (typeof agentState.slides_css === "string") {
+      this._slidesCss = agentState.slides_css;
+    }
   };
 
-  private _handleToolCallEnd = (e: AgUiToolCallEndEvent) => {
-    // WIP
-    console.log(e);
-  };
+  // --- User Actions ---
 
-  private _handleToolCallError = (e: AgUiToolCallErrorEvent) => {
-    // WIP
-    console.log(e);
-  };
-
-  private _handleDefineTool = (e: Event) => {
-    const event = e as DefineToolEvent;
-    const { name, description, parameters, handler } = event.detail;
-    this._agentElement.registerTool(name, description, parameters, handler);
-  };
-
-  connectedCallback() {
-    super.connectedCallback();
-    document.addEventListener("define-tool", this._handleDefineTool);
+  private _handleSend(e: CustomEvent<{ message: string }>) {
+    // Sync current editor state to agent before sending
+    this._agentElement.setState({
+      slides_markdown: this._slidesMarkdown,
+      slides_css: this._slidesCss,
+    });
+    this._agentElement.sendMessage(e.detail.message);
   }
 
-  firstUpdated() {
-    // Register tools after first render when _agentElement is available
-    registerHelloTool();
+  private _handleAbort() {
+    this._agentElement.abort();
   }
 
-  disconnectedCallback() {
-    super.disconnectedCallback();
-    document.removeEventListener("define-tool", this._handleDefineTool);
+  private _handleMarkdownChange(e: CustomEvent<{ value: string }>) {
+    this._slidesMarkdown = e.detail.value;
   }
+
+  private _handleCssChange(e: CustomEvent<{ value: string }>) {
+    this._slidesCss = e.detail.value;
+  }
+
+  private _handleSlideChange(e: CustomEvent<{ index: number }>) {
+    this._currentSlide = e.detail.index;
+  }
+
+  private _handleToastClose(e: CustomEvent<{ id: string }>) {
+    this._toasts = this._toasts.filter((t) => t.id !== e.detail.id);
+  }
+
+  // --- Helpers ---
 
   private _transformMessages(messages: Message[]): ChatMessageData[] {
     const result: ChatMessageData[] = [];
     let pendingReasoning: string | undefined;
-
     for (const msg of messages) {
       if (msg.role === "reasoning") {
         pendingReasoning = this._getContentText(msg.content);
         continue;
       }
       if (msg.role !== "user" && msg.role !== "assistant") continue;
-
       result.push({
         id: msg.id,
         position: msg.role === "user" ? "right" : "left",
@@ -145,7 +142,6 @@ export class ChatApp extends LitElement {
       });
       pendingReasoning = undefined;
     }
-
     return result;
   }
 
@@ -165,7 +161,6 @@ export class ChatApp extends LitElement {
 
   private _computeLoading(messages: Message[]): ChatLoadingData | null {
     if (!this._isRunning) return null;
-
     const lastMessage = messages.at(-1);
     if (
       lastMessage?.role === "assistant" &&
@@ -173,7 +168,6 @@ export class ChatApp extends LitElement {
     ) {
       return null;
     }
-
     return {
       position: "left",
       variant: "secondary",
@@ -194,17 +188,7 @@ export class ChatApp extends LitElement {
     ];
   }
 
-  private _handleSend(e: CustomEvent<{ message: string }>) {
-    this._agentElement.sendMessage(e.detail.message);
-  }
-
-  private _handleAbort() {
-    this._agentElement.abort();
-  }
-
-  private _handleToastClose(e: CustomEvent<{ id: string }>) {
-    this._toasts = this._toasts.filter((t) => t.id !== e.detail.id);
-  }
+  // --- Render ---
 
   render() {
     return html`
@@ -215,50 +199,71 @@ export class ChatApp extends LitElement {
         @ag-ui-run-finalized=${this._handleRunFinalized}
         @ag-ui-reasoning-content=${this._handleReasoningContent}
         @ag-ui-reasoning-end=${this._handleReasoningEnd}
-        @ag-ui-tool-call-start=${this._handleToolCallStart}
-        @ag-ui-tool-call-end=${this._handleToolCallEnd}
-        @ag-ui-tool-call-error=${this._handleToolCallError}
+        @ag-ui-state-changed=${this._handleStateChanged}
       ></ag-ui-agent>
 
-      <main
-        part="container"
-        class="chat-container"
-        aria-label="Chat application"
-      >
-        <slot name="header"></slot>
+      <main class="app-layout" aria-label="LT Slide Creator">
+        <!-- Left: Chat Panel -->
+        <section class="chat-panel" aria-label="Chat">
+          <chat-messages
+            .messages=${this._messages}
+            .loading=${this._loading}
+          ></chat-messages>
 
-        <chat-messages
-          .messages=${this._messages}
-          .loading=${this._loading}
-        ></chat-messages>
-
-        <chat-input
-          @send=${this._handleSend}
-          ?disabled=${this._isRunning}
-          label="Type your message"
-        >
-          ${this._isRunning
-            ? html`
-                <button
-                  slot="suffix"
-                  class="stop-button"
-                  @click=${this._handleAbort}
-                  aria-label="Stop generating"
-                  type="button"
-                >
-                  <svg
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                    aria-hidden="true"
+          <chat-input
+            @send=${this._handleSend}
+            ?disabled=${this._isRunning}
+            label="Describe your LT slides..."
+          >
+            ${this._isRunning
+              ? html`
+                  <button
+                    slot="suffix"
+                    class="stop-button"
+                    @click=${this._handleAbort}
+                    aria-label="Stop generating"
+                    type="button"
                   >
-                    <rect x="6" y="6" width="12" height="12" rx="2" />
-                  </svg>
-                </button>
-              `
-            : nothing}
-        </chat-input>
+                    <svg
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                      aria-hidden="true"
+                    >
+                      <rect x="6" y="6" width="12" height="12" rx="2" />
+                    </svg>
+                  </button>
+                `
+              : nothing}
+          </chat-input>
+        </section>
+
+        <!-- Right: Slide Area -->
+        <section class="slide-area" aria-label="Slides">
+          <slide-preview
+            .markdown=${this._slidesMarkdown}
+            .customCss=${this._slidesCss}
+            .currentSlide=${this._currentSlide}
+            @slide-change=${this._handleSlideChange}
+          ></slide-preview>
+
+          <div class="editors-panel">
+            <code-editor
+              .value=${this._slidesMarkdown}
+              language="markdown"
+              label="Marp Markdown"
+              @value-changed=${this._handleMarkdownChange}
+            ></code-editor>
+
+            <code-editor
+              .value=${this._slidesCss}
+              language="css"
+              label="Custom CSS"
+              @value-changed=${this._handleCssChange}
+            ></code-editor>
+          </div>
+        </section>
       </main>
 
       <toast-manager
@@ -275,23 +280,44 @@ export class ChatApp extends LitElement {
       :host {
         display: block;
         height: 100%;
+        overflow: hidden;
       }
 
-      .chat-container {
+      .app-layout {
+        display: grid;
+        grid-template-columns: 380px 1fr;
+        height: 100%;
+        overflow: hidden;
+      }
+
+      /* Left: Chat Panel */
+      .chat-panel {
         display: flex;
         flex-direction: column;
         height: 100%;
-        max-width: var(--chat-container-max-width);
-        margin: 0 auto;
-        background: var(--chat-surface-primary);
+        overflow: hidden;
+        border-right: 1px solid var(--chat-border-secondary, #e0e0e0);
+        background: var(--chat-surface-primary, #fff);
       }
 
-      .tool-calls {
-        display: flex;
-        flex-direction: column;
-        gap: var(--chat-spacing-sm);
-        padding: var(--chat-spacing-md) var(--chat-spacing-lg);
-        border-top: 1px solid var(--chat-border-secondary);
+      /* Right: Slide Area */
+      .slide-area {
+        display: grid;
+        grid-template-rows: 1fr auto;
+        height: 100%;
+        overflow: hidden;
+      }
+
+      /* Bottom Editors */
+      .editors-panel {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        height: 280px;
+        border-top: 1px solid #e0e0e0;
+      }
+
+      .editors-panel code-editor:first-child {
+        border-right: 1px solid #e0e0e0;
       }
 
       .stop-button {
@@ -323,6 +349,6 @@ export class ChatApp extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    "chat-app": ChatApp;
+    "slide-app": SlideApp;
   }
 }

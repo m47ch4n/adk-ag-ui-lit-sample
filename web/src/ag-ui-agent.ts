@@ -10,12 +10,16 @@ import { LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { z } from "zod";
 import type {
+  AgUiCustomAgEvent,
   AgUiMessagesChangedEvent,
   AgUiReasoningContentEvent,
   AgUiReasoningEndEvent,
   AgUiRunFailedEvent,
   AgUiRunFinalizedEvent,
   AgUiRunStartedEvent,
+  AgUiStateChangedEvent,
+  AgUiStateDeltaEvent,
+  AgUiStateSnapshotEvent,
   AgUiToolCallArgsEvent,
   AgUiToolCallEndEvent,
   AgUiToolCallErrorEvent,
@@ -54,6 +58,14 @@ export class AgUiAgent extends LitElement {
 
   get messages(): Message[] {
     return this._agent?.messages ?? [];
+  }
+
+  setState(state: Record<string, unknown>): void {
+    this._agent?.setState(state);
+  }
+
+  get state(): Record<string, unknown> {
+    return (this._agent?.state as Record<string, unknown>) ?? {};
   }
 
   /**
@@ -182,6 +194,28 @@ export class AgUiAgent extends LitElement {
         this._dispatchEvent("ag-ui-run-finalized", {
           threadId: this.threadId,
         } satisfies AgUiRunFinalizedEvent["detail"]);
+      },
+      onStateSnapshotEvent: (params) => {
+        this._dispatchEvent("ag-ui-state-snapshot", {
+          snapshot: params.event.snapshot,
+        } satisfies AgUiStateSnapshotEvent["detail"]);
+        return { state: params.event.snapshot };
+      },
+      onStateDeltaEvent: (params) => {
+        this._dispatchEvent("ag-ui-state-delta", {
+          delta: params.event.delta,
+        } satisfies AgUiStateDeltaEvent["detail"]);
+      },
+      onCustomEvent: (params) => {
+        this._dispatchEvent("ag-ui-custom", {
+          name: params.event.name,
+          value: params.event.value,
+        } satisfies AgUiCustomAgEvent["detail"]);
+      },
+      onStateChanged: (params) => {
+        this._dispatchEvent("ag-ui-state-changed", {
+          state: params.state as Record<string, unknown>,
+        } satisfies AgUiStateChangedEvent["detail"]);
       },
       onToolCallStartEvent: (params) => {
         this._dispatchEvent("ag-ui-tool-call-start", {

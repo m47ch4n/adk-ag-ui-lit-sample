@@ -1,11 +1,10 @@
 import logging
-
 import warnings
 
 from fastapi import FastAPI
 from google.adk.apps import App
 from google.adk.apps.app import ResumabilityConfig
-from ag_ui_adk import ADKAgent, add_adk_fastapi_endpoint
+from ag_ui_adk import ADKAgent, PredictStateMapping, add_adk_fastapi_endpoint
 
 from sample_agent.agent import root_agent
 
@@ -18,26 +17,31 @@ logging.getLogger("event_translator").setLevel(logging.INFO)
 logging.getLogger("session_manager").setLevel(logging.WARNING)
 logging.getLogger("endpoint").setLevel(logging.ERROR)
 
-# Suppress experimental warning for ResumabilityConfig
+# Suppress experimental warnings
 warnings.filterwarnings("ignore", message=".*ResumabilityConfig.*")
+warnings.filterwarnings("ignore", message=".*SkillToolset.*")
 
 adk_app = App(
-    name="sample_app",
+    name="lt_slide_creator",
     root_agent=root_agent,
     resumability_config=ResumabilityConfig(is_resumable=True),
 )
 
 agent = ADKAgent.from_app(
     adk_app,
-    # streaming_function_call_arguments requires Vertex AI (not Google AI Studio)
-    # and google-adk >= 1.24.0. Enable when using Vertex AI:
-    # streaming_function_call_arguments=True,
+    predict_state=[
+        PredictStateMapping(
+            state_key="slides_markdown",
+            tool="write_slides",
+            tool_argument="markdown",
+        ),
+    ],
     user_id_extractor=lambda input: input.state.get("headers", {}).get(
         "user_id", "anonymous"
     ),
 )
 
-app = FastAPI(title="ADK Agent API")
+app = FastAPI(title="LT Slide Creator API")
 
 
 @app.get("/health")

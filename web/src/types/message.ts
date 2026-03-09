@@ -6,7 +6,6 @@ export interface ChatMessageData {
   id: string;
   position: MessagePosition;
   variant: MessageVariant;
-  avatar: string;
   content: string;
   reasoning?: string;
 }
@@ -14,6 +13,5 @@ export interface ChatMessageData {
 export interface ChatLoadingData {
   position: MessagePosition;
   variant: MessageVariant;
-  avatar: string;
   reasoning?: string;
 }

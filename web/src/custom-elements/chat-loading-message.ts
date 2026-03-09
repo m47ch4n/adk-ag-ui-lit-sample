@@ -14,9 +14,6 @@ export class ChatLoadingMessage extends LitElement {
   variant: MessageVariant = "secondary";
 
   @property({ type: String })
-  avatar = "";
-
-  @property({ type: String })
   reasoning?: string;
 
   render() {
@@ -29,9 +26,6 @@ export class ChatLoadingMessage extends LitElement {
           ? "Assistant is thinking"
           : "Assistant is typing"}
       >
-        <div part="avatar" class="avatar" aria-hidden="true">
-          <slot name="avatar">${this.avatar}</slot>
-        </div>
         <div part="bubble" class="bubble">
           ${this.reasoning
             ? html`
