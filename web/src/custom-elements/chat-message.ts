@@ -1,5 +1,5 @@
 import { css, html, LitElement, nothing } from "lit";
-import { customElement, property } from "lit/decorators.js";
+import { customElement, property, query, state } from "lit/decorators.js";
 import { chatMessageBaseStyles } from "../styles/chat-message-base.js";
 import { chatTokens } from "../styles/tokens.js";
 import type { MessagePosition, MessageVariant } from "../types/index.js";
@@ -19,7 +19,41 @@ export class ChatMessage extends LitElement {
   @property({ type: String })
   reasoning?: string;
 
+  @state() private _expanded = false;
+  @state() private _overflows = false;
+
+  @query(".bubble-content")
+  private _bubbleContent?: HTMLDivElement;
+
+  willUpdate(changedProperties: Map<string, unknown>) {
+    if (changedProperties.has("content")) {
+      this._expanded = false;
+    }
+  }
+
+  updated() {
+    if (this.position === "right" && !this._expanded) {
+      this._checkOverflow();
+    }
+  }
+
+  private _checkOverflow() {
+    if (!this._bubbleContent) return;
+    const overflows =
+      this._bubbleContent.scrollHeight > this._bubbleContent.clientHeight;
+    if (overflows !== this._overflows) {
+      this._overflows = overflows;
+    }
+  }
+
+  private _toggleExpand() {
+    this._expanded = !this._expanded;
+  }
+
   render() {
+    const isUserMessage = this.position === "right";
+    const isCollapsed = isUserMessage && !this._expanded;
+
     return html`
       <article
         part="message"
@@ -37,9 +71,22 @@ export class ChatMessage extends LitElement {
                 </details>
               `
             : nothing}
-          <slot>
-            <markdown-content .content=${this.content}></markdown-content>
-          </slot>
+          <div class="bubble-content ${isCollapsed ? "collapsed" : ""}">
+            <slot>
+              <markdown-content .content=${this.content}></markdown-content>
+            </slot>
+          </div>
+          ${isUserMessage && this._overflows
+            ? html`
+                <button
+                  class="expand-toggle"
+                  @click=${this._toggleExpand}
+                  aria-expanded=${this._expanded}
+                >
+                  ${this._expanded ? "Show less" : "Show more"}
+                </button>
+              `
+            : nothing}
         </div>
       </article>
     `;
@@ -69,6 +116,36 @@ export class ChatMessage extends LitElement {
         white-space: pre-wrap;
         max-height: 300px;
         overflow-y: auto;
+      }
+
+      .bubble-content.collapsed {
+        max-height: 7.5em; /* ~5 lines at 1.5 line-height */
+        overflow: hidden;
+        mask-image: linear-gradient(to bottom, #000 5em, transparent);
+        -webkit-mask-image: linear-gradient(to bottom, #000 5em, transparent);
+      }
+
+      .expand-toggle {
+        display: block;
+        margin-top: var(--chat-spacing-xs, 4px);
+        padding: 0;
+        border: none;
+        background: none;
+        color: var(--chat-text-muted, #888);
+        font-size: var(--chat-font-size-sm, 0.8125rem);
+        cursor: pointer;
+        text-align: right;
+        width: 100%;
+
+        &:hover {
+          text-decoration: underline;
+        }
+
+        &:focus-visible {
+          outline: 2px solid var(--chat-color-primary, #1976d2);
+          outline-offset: 2px;
+          border-radius: 2px;
+        }
       }
     `,
   ];
