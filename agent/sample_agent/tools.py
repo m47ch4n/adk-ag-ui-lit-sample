@@ -1,10 +1,3 @@
-"""Slide manipulation tools for the LT Slide Creator.
-
-Medium-granularity tool design inspired by Claude Code:
-- write_slides / edit_slide = specialized (preferred)
-- update_slides = universal fallback (JSON Patch)
-"""
-
 import logging
 
 import jsonpatch
@@ -57,7 +50,10 @@ def edit_slide(
     """
     markdown = tool_context.state.get("slides_markdown", "")
     if not markdown:
-        return {"status": "error", "message": "No slides exist yet. Use write_slides first."}
+        return {
+            "status": "error",
+            "message": "No slides exist yet. Use write_slides first.",
+        }
 
     slides = _split_slides(markdown)
 
@@ -79,14 +75,21 @@ def edit_slide(
     return {"status": "success", "message": f"Edited slide {slide_index} successfully."}
 
 
-def get_slides(tool_context: ToolContext) -> dict[str, str | list[dict[str, str | int]]]:
+def get_slides(
+    tool_context: ToolContext,
+) -> dict[str, str | list[dict[str, str | int]]]:
     """Read the current slide deck content.
 
     Returns the full markdown and a summary of each slide.
     """
     markdown = tool_context.state.get("slides_markdown", "")
     if not markdown:
-        return {"status": "empty", "message": "No slides yet.", "markdown": "", "slides": []}
+        return {
+            "status": "empty",
+            "message": "No slides yet.",
+            "markdown": "",
+            "slides": [],
+        }
 
     slides = _split_slides(markdown)
     slide_summaries = []
@@ -120,7 +123,10 @@ def update_slides(tool_context: ToolContext, patch: list[dict]) -> dict[str, str
     """
     markdown = tool_context.state.get("slides_markdown", "")
     if not markdown:
-        return {"status": "error", "message": "No slides exist yet. Use write_slides first."}
+        return {
+            "status": "error",
+            "message": "No slides exist yet. Use write_slides first.",
+        }
 
     slides = _split_slides(markdown)
 

@@ -18,17 +18,10 @@ from sample_agent.tools import edit_slide, get_slides, update_slides, write_slid
 
 SKILLS_DIR = Path(__file__).parent / "skills"
 
-# --- Load ADK Skills ---
-lt_skill = load_skill_from_dir(SKILLS_DIR / "lt-structure")
-marp_skill = load_skill_from_dir(SKILLS_DIR / "marp-design")
-pptx_skill = load_skill_from_dir(SKILLS_DIR / "pptx-export")
-
-skills = SkillToolset(skills=[lt_skill, marp_skill, pptx_skill])
-
-# --- Sub-agent: Slide Author ---
 slide_author = Agent(
     model="gemini-3.1-pro-preview",
     name="slide_author",
+
     description=dedent("""\
         Specialist in creating and editing LT (Lightning Talk) slide content.
         Generates high-quality Marp Markdown for presentations. Delegate to
@@ -50,10 +43,12 @@ slide_author = Agent(
         Always use Marp directives for styling (backgroundColor, color, etc.).
         Keep slides concise: one idea per slide, max 3 bullet points.\
     """),
+    generate_content_config=GenerateContentConfig(
+        thinking_config=ThinkingConfig(include_thoughts=True),
+    ),
     tools=[write_slides, edit_slide, get_slides, update_slides],
 )
 
-# --- Root agent: LT Assistant ---
 root_agent = Agent(
     name="lt_assistant",
     model="gemini-3.1-flash-lite-preview",
@@ -78,6 +73,15 @@ root_agent = Agent(
     generate_content_config=GenerateContentConfig(
         thinking_config=ThinkingConfig(include_thoughts=True),
     ),
-    tools=[skills, AGUIToolset()],
+    tools=[
+        SkillToolset(
+            skills=[
+                load_skill_from_dir(SKILLS_DIR / "lt-structure"),
+                load_skill_from_dir(SKILLS_DIR / "marp-design"),
+                load_skill_from_dir(SKILLS_DIR / "pptx-export"),
+            ]
+        ),
+        AGUIToolset(),
+    ],
     sub_agents=[slide_author],
 )
