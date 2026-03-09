@@ -136,6 +136,7 @@ export class SlideApp extends LitElement {
         id: msg.id,
         position: msg.role === "user" ? "right" : "left",
         variant: msg.role === "user" ? "primary" : "secondary",
+
         content: this._getContentText(msg.content),
         reasoning: msg.role === "assistant" ? pendingReasoning : undefined,
       });
@@ -170,6 +171,7 @@ export class SlideApp extends LitElement {
     return {
       position: "left",
       variant: "secondary",
+
       reasoning: this._reasoningContent || undefined,
     };
   }
@@ -278,6 +280,7 @@ export class SlideApp extends LitElement {
       :host {
         display: block;
         height: 100%;
+        overflow: hidden;
       }
 
       .app-layout {
