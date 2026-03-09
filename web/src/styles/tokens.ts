@@ -50,13 +50,6 @@ export const chatTokens = css`
     --chat-bubble-assistant-text: var(--chat-text-primary);
     --chat-bubble-assistant-border: var(--chat-border-primary);
 
-    /* Component - Avatar */
-    --chat-avatar-user-bg: var(--chat-surface-inverse);
-    --chat-avatar-user-text: var(--chat-text-inverse);
-    --chat-avatar-assistant-bg: var(--chat-surface-tertiary);
-    --chat-avatar-assistant-text: var(--chat-text-secondary);
-    --chat-avatar-assistant-border: var(--chat-border-primary);
-
     /* Component - Input */
     --chat-input-bg: var(--chat-surface-secondary);
     --chat-input-bg-focus: var(--chat-surface-primary);
@@ -142,13 +135,6 @@ export const chatTokens = css`
     --chat-bubble-assistant-bg: var(--chat-surface-tertiary);
     --chat-bubble-assistant-text: var(--chat-text-primary);
     --chat-bubble-assistant-border: var(--chat-border-primary);
-
-    /* Component - Avatar */
-    --chat-avatar-user-bg: var(--chat-surface-inverse);
-    --chat-avatar-user-text: var(--chat-text-inverse);
-    --chat-avatar-assistant-bg: var(--chat-surface-tertiary);
-    --chat-avatar-assistant-text: var(--chat-text-secondary);
-    --chat-avatar-assistant-border: var(--chat-border-primary);
 
     /* Component - Input */
     --chat-input-bg: var(--chat-surface-secondary);

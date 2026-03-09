@@ -72,9 +72,14 @@ export class CodeEditor extends LitElement {
       }
     });
 
+    const containerTheme = EditorView.theme({
+      "&": { height: "100%" },
+      ".cm-scroller": { overflow: "auto" },
+    });
+
     const state = EditorState.create({
       doc: this.value,
-      extensions: [basicSetup, languageExtension, updateListener],
+      extensions: [basicSetup, languageExtension, updateListener, containerTheme],
     });
 
     this._view = new EditorView({
@@ -121,15 +126,7 @@ export class CodeEditor extends LitElement {
       overflow: hidden;
     }
 
-    /* CodeMirror fills its container */
-    .editor-container .cm-editor {
-      height: 100%;
-      overflow: hidden;
-    }
-
-    .editor-container .cm-editor .cm-scroller {
-      overflow: auto;
-    }
+    /* CodeMirror height/scroll managed via EditorView.theme extension */
   `;
 }
 

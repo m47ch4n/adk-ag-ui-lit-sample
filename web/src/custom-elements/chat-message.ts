@@ -14,9 +14,6 @@ export class ChatMessage extends LitElement {
   variant: MessageVariant = "secondary";
 
   @property({ type: String })
-  avatar = "";
-
-  @property({ type: String })
   content = "";
 
   @property({ type: String })
@@ -31,9 +28,6 @@ export class ChatMessage extends LitElement {
           ? "Your message"
           : "Assistant message"}"
       >
-        <div part="avatar" class="avatar" aria-hidden="true">
-          <slot name="avatar">${this.avatar}</slot>
-        </div>
         <div part="bubble" class="bubble">
           ${this.reasoning
             ? html`

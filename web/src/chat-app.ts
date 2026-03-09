@@ -55,7 +55,7 @@ export class ChatApp extends LitElement {
     this._loading = {
       position: "left",
       variant: "secondary",
-      avatar: "A",
+
     };
   };
 
@@ -139,7 +139,7 @@ export class ChatApp extends LitElement {
         id: msg.id,
         position: msg.role === "user" ? "right" : "left",
         variant: msg.role === "user" ? "primary" : "secondary",
-        avatar: msg.role === "user" ? "U" : "A",
+
         content: this._getContentText(msg.content),
         reasoning: msg.role === "assistant" ? pendingReasoning : undefined,
       });
@@ -177,7 +177,7 @@ export class ChatApp extends LitElement {
     return {
       position: "left",
       variant: "secondary",
-      avatar: "A",
+
       reasoning: this._reasoningContent || undefined,
     };
   }

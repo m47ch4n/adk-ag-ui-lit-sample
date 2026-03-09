@@ -49,7 +49,7 @@ export class SlideApp extends LitElement {
   private _handleRunStarted = (_e: AgUiRunStartedEvent) => {
     this._isRunning = true;
     this._reasoningContent = "";
-    this._loading = { position: "left", variant: "secondary", avatar: "A" };
+    this._loading = { position: "left", variant: "secondary" };
   };
 
   private _handleRunFailed = (e: AgUiRunFailedEvent) => {
@@ -136,7 +136,6 @@ export class SlideApp extends LitElement {
         id: msg.id,
         position: msg.role === "user" ? "right" : "left",
         variant: msg.role === "user" ? "primary" : "secondary",
-        avatar: msg.role === "user" ? "U" : "A",
         content: this._getContentText(msg.content),
         reasoning: msg.role === "assistant" ? pendingReasoning : undefined,
       });
@@ -171,7 +170,6 @@ export class SlideApp extends LitElement {
     return {
       position: "left",
       variant: "secondary",
-      avatar: "A",
       reasoning: this._reasoningContent || undefined,
     };
   }

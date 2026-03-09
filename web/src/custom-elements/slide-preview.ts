@@ -118,6 +118,7 @@ export class SlidePreview extends LitElement {
 
     .slide-viewport {
       flex: 1;
+      min-height: 0;
       overflow: hidden;
       display: flex;
       align-items: center;
