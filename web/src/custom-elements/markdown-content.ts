@@ -72,7 +72,11 @@ export class MarkdownContent extends LitElement {
 
   updated(changedProperties: Map<string, unknown>) {
     if (changedProperties.has("content") && this._typed !== this.content) {
-      this._handleContentChange();
+      if (this.typingDuration <= 0) {
+        this._typed = this.content;
+      } else {
+        this._handleContentChange();
+      }
     }
   }
 

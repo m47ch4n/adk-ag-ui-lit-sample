@@ -33,7 +33,7 @@ export class ChatMessage extends LitElement {
 
   updated() {
     if (this.position === "right" && !this._expanded) {
-      this._checkOverflow();
+      requestAnimationFrame(() => this._checkOverflow());
     }
   }
 
@@ -73,7 +73,10 @@ export class ChatMessage extends LitElement {
             : nothing}
           <div class="bubble-content ${isCollapsed ? "collapsed" : ""}">
             <slot>
-              <markdown-content .content=${this.content}></markdown-content>
+              <markdown-content
+                .content=${this.content}
+                .typingDuration=${isUserMessage ? 0 : 300}
+              ></markdown-content>
             </slot>
           </div>
           ${isUserMessage && this._overflows
@@ -121,13 +124,14 @@ export class ChatMessage extends LitElement {
       .bubble-content.collapsed {
         max-height: 7.5em; /* ~5 lines at 1.5 line-height */
         overflow: hidden;
-        mask-image: linear-gradient(to bottom, #000 5em, transparent);
-        -webkit-mask-image: linear-gradient(to bottom, #000 5em, transparent);
+        mask-image: linear-gradient(to bottom, black 60%, transparent);
+        -webkit-mask-image: linear-gradient(to bottom, black 60%, transparent);
       }
 
       .expand-toggle {
         display: block;
-        margin-top: var(--chat-spacing-xs, 4px);
+        margin-top: -1.5em;
+        position: relative;
         padding: 0;
         border: none;
         background: none;
