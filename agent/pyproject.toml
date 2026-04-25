@@ -12,6 +12,7 @@ dependencies = [
 
 [tool.uv]
 prerelease = "allow"
+exclude-newer = "1 day"
 override-dependencies = [
     "google-adk>=2.0.0b1",
 ]
