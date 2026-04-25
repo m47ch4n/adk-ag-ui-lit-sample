@@ -4,7 +4,7 @@ from google.genai.types import GenerateContentConfig, ThinkingConfig
 
 root_agent = Agent(
     name="sample_agent",
-    model="gemini-3.1-flash-lite-preview",
+    model="gemini-flash-latest",
     description="A helpful assistant for user questions.",
     instruction="Answer user questions to the best of your knowledge",
     generate_content_config=GenerateContentConfig(
