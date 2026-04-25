@@ -60,7 +60,7 @@ Endpoints:
 
 ### Web (TypeScript Frontend)
 
-From `web/` directory using pnpm:
+From `web/` directory using pnpm. **NEVER use npm or yarn for this project — pnpm only.** This includes any registry queries (`pnpm view`, `pnpm outdated`) and dependency operations (`pnpm add`, `pnpm update`).
 
 ```bash
 pnpm install    # Install dependencies

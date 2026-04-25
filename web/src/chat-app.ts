@@ -124,7 +124,7 @@ export class ChatApp extends LitElement {
     document.removeEventListener("define-tool", this._handleDefineTool);
   }
 
-  private _transformMessages(messages: Message[]): ChatMessageData[] {
+  private _transformMessages(messages: readonly Message[]): ChatMessageData[] {
     const result: ChatMessageData[] = [];
     let pendingReasoning: string | undefined;
 
@@ -163,7 +163,9 @@ export class ChatApp extends LitElement {
     return "";
   }
 
-  private _computeLoading(messages: Message[]): ChatLoadingData | null {
+  private _computeLoading(
+    messages: readonly Message[],
+  ): ChatLoadingData | null {
     if (!this._isRunning) return null;
 
     const lastMessage = messages.at(-1);

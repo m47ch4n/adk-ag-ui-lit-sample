@@ -145,7 +145,7 @@ export class AgUiAgent extends LitElement {
           case EventType.THINKING_START:
           case EventType.REASONING_START:
             this._reasoningBuffer = "";
-            this._dispatchEvent("ag-ui-reasoning-start", {});
+            this._dispatchEvent("ag-ui-reasoning-start", undefined);
             break;
           case EventType.THINKING_TEXT_MESSAGE_CONTENT:
           case EventType.REASONING_MESSAGE_CONTENT: {

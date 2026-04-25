@@ -40,7 +40,9 @@ export class ChatLoadingMessage extends LitElement {
                   <div class="reasoning-content">${this.reasoning}</div>
                 </details>
               `
-            : html`<span class="visually-hidden">Loading response</span>`}
+            : html`
+                <span class="visually-hidden">Loading response</span>
+              `}
         </div>
       </div>
     `;

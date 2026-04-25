@@ -3,7 +3,7 @@ import type { z } from "zod";
 import type { ToolHandler } from "./tool.js";
 
 export interface AgUiMessagesChangedEvent extends CustomEvent<{
-  messages: Message[];
+  messages: readonly Message[];
 }> {}
 
 export interface AgUiRunStartedEvent extends CustomEvent<{
@@ -17,27 +17,24 @@ export interface AgUiRunFinalizedEvent extends CustomEvent<{
 }> {}
 
 // Reasoning events (thinking/reasoning from LLM)
-export interface AgUiReasoningStartEvent extends CustomEvent<{}> {}
+export interface AgUiReasoningStartEvent extends CustomEvent<undefined> {}
 
-export interface AgUiReasoningContentEvent
-  extends CustomEvent<{
-    delta: string;
-    buffer: string;
-  }> {}
+export interface AgUiReasoningContentEvent extends CustomEvent<{
+  delta: string;
+  buffer: string;
+}> {}
 
-export interface AgUiReasoningEndEvent
-  extends CustomEvent<{
-    content: string;
-  }> {}
+export interface AgUiReasoningEndEvent extends CustomEvent<{
+  content: string;
+}> {}
 
 // Tool-related events
-export interface AgUiToolCallArgsEvent
-  extends CustomEvent<{
-    toolCallId: string;
-    toolCallName: string;
-    delta: string;
-    buffer: string;
-  }> {}
+export interface AgUiToolCallArgsEvent extends CustomEvent<{
+  toolCallId: string;
+  toolCallName: string;
+  delta: string;
+  buffer: string;
+}> {}
 
 export interface AgUiToolCallStartEvent extends CustomEvent<{
   toolCallId: string;
