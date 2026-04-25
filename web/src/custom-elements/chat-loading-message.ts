@@ -1,5 +1,6 @@
 import { css, html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
+
 import { a11yStyles } from "../styles/a11y.js";
 import { chatMessageBaseStyles } from "../styles/chat-message-base.js";
 import { chatTokens } from "../styles/tokens.js";
@@ -25,9 +26,7 @@ export class ChatLoadingMessage extends LitElement {
         part="message"
         class="message ${this.position} ${this.variant}"
         role="status"
-        aria-label=${this.reasoning
-          ? "Assistant is thinking"
-          : "Assistant is typing"}
+        aria-label=${this.reasoning ? "Assistant is thinking" : "Assistant is typing"}
       >
         <div part="avatar" class="avatar" aria-hidden="true">
           <slot name="avatar">${this.avatar}</slot>
@@ -40,9 +39,7 @@ export class ChatLoadingMessage extends LitElement {
                   <div class="reasoning-content">${this.reasoning}</div>
                 </details>
               `
-            : html`
-                <span class="visually-hidden">Loading response</span>
-              `}
+            : html` <span class="visually-hidden">Loading response</span> `}
         </div>
       </div>
     `;

@@ -1,8 +1,6 @@
 import type { z } from "zod";
 
-export type ToolHandler<T = Record<string, unknown>> = (
-  args: T,
-) => string | Promise<string>;
+export type ToolHandler<T = Record<string, unknown>> = (args: T) => string | Promise<string>;
 
 /**
  * Type-safe tool definition with Zod schema.

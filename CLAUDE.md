@@ -63,18 +63,20 @@ Endpoints:
 From `web/` directory using pnpm. **NEVER use npm or yarn for this project — pnpm only.** This includes any registry queries (`pnpm view`, `pnpm outdated`) and dependency operations (`pnpm add`, `pnpm update`).
 
 ```bash
-pnpm install    # Install dependencies
-pnpm dev        # Start dev server with hot reload
-pnpm build      # Compile TypeScript + build production bundle
-pnpm preview    # Preview production build locally
-pnpm check      # Biome lint & auto-fix
-pnpm format     # Prettier format
+pnpm install      # Install dependencies
+pnpm dev          # Start dev server with hot reload
+pnpm build        # Compile TypeScript + build production bundle
+pnpm preview      # Preview production build locally
+pnpm lint         # oxlint
+pnpm lint:fix     # oxlint --fix
+pnpm format       # oxfmt format
+pnpm format:check # oxfmt check
 ```
 
 ### Linting & Formatting
 
-- **Biome** (linter): Recommended rules, auto-organize imports. Formatter disabled (delegated to Prettier).
-- **Prettier** (formatter): Double quotes.
+- **oxlint** (linter): `correctness` category as error, plugins: `typescript`, `unicorn`, `import`. Config in `.oxlintrc.json`.
+- **oxfmt** (formatter): Prettier-compatible defaults (double quotes, 2-space indent), `sortImports: true` for grouped/sorted imports. Config in `.oxfmtrc.json`.
 - **TypeScript**: Strict mode, `experimentalDecorators`, `noUnusedLocals`, `noUnusedParameters`.
 - **No test suite** currently configured.
 

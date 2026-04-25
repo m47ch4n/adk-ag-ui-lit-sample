@@ -1,5 +1,6 @@
 import { css, html, LitElement } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
+
 import { a11yStyles } from "../styles/a11y.js";
 import { chatTokens } from "../styles/tokens.js";
 
@@ -76,9 +77,7 @@ export class ChatInput extends LitElement {
       <form part="form" class="input-form" @submit=${this.handleSubmit}>
         <slot name="prefix"></slot>
         <div part="input-wrapper" class="input-wrapper">
-          <label for="chat-input-field" class="visually-hidden">
-            ${this.label}
-          </label>
+          <label for="chat-input-field" class="visually-hidden"> ${this.label} </label>
           <textarea
             id="chat-input-field"
             part="input"
@@ -138,8 +137,7 @@ export class ChatInput extends LitElement {
       .input-form {
         display: flex;
         gap: var(--chat-spacing-md);
-        padding: var(--chat-spacing-lg) var(--chat-spacing-xl)
-          var(--chat-spacing-xl);
+        padding: var(--chat-spacing-lg) var(--chat-spacing-xl) var(--chat-spacing-xl);
         background: var(--chat-surface-primary);
         border-top: 1px solid var(--chat-border-secondary);
         align-items: center;

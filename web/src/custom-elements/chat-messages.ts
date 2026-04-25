@@ -1,5 +1,6 @@
 import { css, html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
+
 import { chatTokens } from "../styles/tokens.js";
 import type { ChatLoadingData, ChatMessageData } from "../types/index.js";
 import "./chat-message.js";
@@ -21,10 +22,7 @@ export class ChatMessages extends LitElement {
 
   updated() {
     const newCount = this.messages.length;
-    if (
-      newCount > this._prevMessageCount &&
-      this.messages[newCount - 1]?.position === "right"
-    ) {
+    if (newCount > this._prevMessageCount && this.messages[newCount - 1]?.position === "right") {
       const turns = this.shadowRoot?.querySelectorAll(".turn");
       turns?.[turns.length - 1]?.scrollIntoView({
         behavior: "smooth",

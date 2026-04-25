@@ -4,6 +4,7 @@ import { customElement, property, state } from "lit/decorators.js";
 import { unsafeHTML } from "lit/directives/unsafe-html.js";
 import { marked } from "marked";
 import remend from "remend";
+
 import { chatTokens } from "../styles/tokens.js";
 
 function processMarkdown(text: string): string {
@@ -103,9 +104,7 @@ export class MarkdownContent extends LitElement {
     const processedHtml = processMarkdown(this._typed);
 
     return html`
-      <div part="markdown-content" class="markdown-content">
-        ${unsafeHTML(processedHtml)}
-      </div>
+      <div part="markdown-content" class="markdown-content">${unsafeHTML(processedHtml)}</div>
     `;
   }
 

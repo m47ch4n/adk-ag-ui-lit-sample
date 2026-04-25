@@ -1,4 +1,5 @@
 import { z } from "zod";
+
 import type { DefineToolEvent } from "../types/events.js";
 import { defineTool } from "../types/tool.js";
 
@@ -18,13 +19,10 @@ const helloTool = defineTool({
 });
 
 export function registerHelloTool(): void {
-  const event: DefineToolEvent<typeof helloTool.parameters> = new CustomEvent(
-    "define-tool",
-    {
-      detail: helloTool,
-      bubbles: true,
-      composed: true,
-    },
-  );
+  const event: DefineToolEvent<typeof helloTool.parameters> = new CustomEvent("define-tool", {
+    detail: helloTool,
+    bubbles: true,
+    composed: true,
+  });
   document.dispatchEvent(event);
 }

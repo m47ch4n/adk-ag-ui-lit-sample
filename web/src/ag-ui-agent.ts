@@ -9,6 +9,7 @@ import {
 import { LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { z } from "zod";
+
 import type {
   AgUiMessagesChangedEvent,
   AgUiReasoningContentEvent,
@@ -102,10 +103,7 @@ export class AgUiAgent extends LitElement {
   private _getToolsForAgent(): Tool[] {
     return Array.from(this._registeredTools.values()).map((tool) => {
       // Remove $schema from parameters as ADK doesn't accept it
-      const { $schema, ...parameters } = tool.parameters as Record<
-        string,
-        unknown
-      >;
+      const { $schema: _$schema, ...parameters } = tool.parameters as Record<string, unknown>;
       return {
         name: tool.name,
         description: tool.description,
@@ -207,12 +205,7 @@ export class AgUiAgent extends LitElement {
         if (!registeredTool) return;
 
         this._pendingToolResults.push(
-          this._executeToolCall(
-            toolCallId,
-            toolCallName,
-            toolCallArgs,
-            registeredTool.handler,
-          ),
+          this._executeToolCall(toolCallId, toolCallName, toolCallArgs, registeredTool.handler),
         );
       },
     };
@@ -257,8 +250,7 @@ export class AgUiAgent extends LitElement {
     } catch (error) {
       console.error(`Tool "${toolCallName}" execution failed:`, error);
 
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
       const toolMessage: ToolMessage = {
         id: crypto.randomUUID(),
         role: "tool",

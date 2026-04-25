@@ -7,9 +7,10 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "check": "biome check --write src",
-    "format": "prettier --write src",
-    "format:check": "prettier --check src"
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "format": "oxfmt src",
+    "format:check": "oxfmt --check src"
   },
   "dependencies": {
     "@ag-ui/client": "^0.0.52",
@@ -21,8 +22,8 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.4.13",
-    "prettier": "^3.8.3",
+    "oxfmt": "^0.46.0",
+    "oxlint": "^1.61.0",
     "typescript": "~6.0.3",
     "vite": "^8.0.10"
   }

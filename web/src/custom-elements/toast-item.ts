@@ -1,5 +1,6 @@
 import { css, html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
+
 import { chatTokens } from "../styles/tokens.js";
 
 export type ToastType = "info" | "error" | "warning" | "success";
@@ -58,10 +59,7 @@ export class ToastItem extends LitElement {
 
   private _resumeTimer() {
     if (this._pausedAt === null || this.noAutoDismiss) return;
-    this._remainingTime = Math.max(
-      0,
-      this._remainingTime - (Date.now() - this._pausedAt),
-    );
+    this._remainingTime = Math.max(0, this._remainingTime - (Date.now() - this._pausedAt));
     this._pausedAt = null;
     if (this._remainingTime > 0) {
       this._startTimer();
@@ -88,9 +86,7 @@ export class ToastItem extends LitElement {
 
   private _dispatchClose() {
     this._clearTimer();
-    this.dispatchEvent(
-      new CustomEvent("close", { bubbles: true, composed: true }),
-    );
+    this.dispatchEvent(new CustomEvent("close", { bubbles: true, composed: true }));
   }
 
   private _getIcon(): string {

@@ -1,5 +1,6 @@
 import { css, html, LitElement, nothing } from "lit";
 import { customElement, property } from "lit/decorators.js";
+
 import { chatMessageBaseStyles } from "../styles/chat-message-base.js";
 import { chatTokens } from "../styles/tokens.js";
 import type { MessagePosition, MessageVariant } from "../types/index.js";
@@ -27,9 +28,7 @@ export class ChatMessage extends LitElement {
       <article
         part="message"
         class="message ${this.position} ${this.variant}"
-        aria-label="${this.position === "right"
-          ? "Your message"
-          : "Assistant message"}"
+        aria-label="${this.position === "right" ? "Your message" : "Assistant message"}"
       >
         <div part="avatar" class="avatar" aria-hidden="true">
           <slot name="avatar">${this.avatar}</slot>

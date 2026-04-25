@@ -1,6 +1,7 @@
 import type { Message } from "@ag-ui/core";
 import { css, html, LitElement, nothing } from "lit";
 import { customElement, query, state } from "lit/decorators.js";
+
 import type { AgUiAgent } from "./ag-ui-agent.js";
 import "./ag-ui-agent.js";
 import "./custom-elements/chat-input.js";
@@ -62,16 +63,10 @@ export class ChatApp extends LitElement {
   private _handleRunFailed = (e: AgUiRunFailedEvent) => {
     this._isRunning = false;
     this._loading = null;
-    if (
-      e.detail.error instanceof Error &&
-      e.detail.error.name === "AbortError"
-    ) {
+    if (e.detail.error instanceof Error && e.detail.error.name === "AbortError") {
       return;
     }
-    const message =
-      e.detail.error instanceof Error
-        ? e.detail.error.message
-        : "Unknown error";
+    const message = e.detail.error instanceof Error ? e.detail.error.message : "Unknown error";
     this._addErrorToast(message);
   };
 
@@ -153,26 +148,18 @@ export class ChatApp extends LitElement {
     if (typeof content === "string") return content;
     if (Array.isArray(content)) {
       return content
-        .filter(
-          (part): part is { type: "text"; text: string } =>
-            part.type === "text",
-        )
+        .filter((part): part is { type: "text"; text: string } => part.type === "text")
         .map((part) => part.text)
         .join("");
     }
     return "";
   }
 
-  private _computeLoading(
-    messages: readonly Message[],
-  ): ChatLoadingData | null {
+  private _computeLoading(messages: readonly Message[]): ChatLoadingData | null {
     if (!this._isRunning) return null;
 
     const lastMessage = messages.at(-1);
-    if (
-      lastMessage?.role === "assistant" &&
-      this._getContentText(lastMessage.content)
-    ) {
+    if (lastMessage?.role === "assistant" && this._getContentText(lastMessage.content)) {
       return null;
     }
 
@@ -222,17 +209,10 @@ export class ChatApp extends LitElement {
         @ag-ui-tool-call-error=${this._handleToolCallError}
       ></ag-ui-agent>
 
-      <main
-        part="container"
-        class="chat-container"
-        aria-label="Chat application"
-      >
+      <main part="container" class="chat-container" aria-label="Chat application">
         <slot name="header"></slot>
 
-        <chat-messages
-          .messages=${this._messages}
-          .loading=${this._loading}
-        ></chat-messages>
+        <chat-messages .messages=${this._messages} .loading=${this._loading}></chat-messages>
 
         <chat-input
           @send=${this._handleSend}

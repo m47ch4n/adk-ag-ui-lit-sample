@@ -1,6 +1,7 @@
 import { css, html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { repeat } from "lit/directives/repeat.js";
+
 import { chatTokens } from "../styles/tokens.js";
 import type { ToastType } from "./toast-item.js";
 import "./toast-item.js";
@@ -19,8 +20,7 @@ export class ToastManager extends LitElement {
   toasts: ToastData[] = [];
 
   @property({ type: String })
-  position: "top-right" | "top-left" | "bottom-right" | "bottom-left" =
-    "bottom-right";
+  position: "top-right" | "top-left" | "bottom-right" | "bottom-left" = "bottom-right";
 
   private _handleClose(id: string) {
     this.dispatchEvent(
@@ -36,11 +36,7 @@ export class ToastManager extends LitElement {
     const isBottom = this.position.startsWith("bottom");
 
     return html`
-      <div
-        class="toast-container ${this.position}"
-        role="region"
-        aria-label="Notifications"
-      >
+      <div class="toast-container ${this.position}" role="region" aria-label="Notifications">
         <!--
 					aria-live container exists from page load.
 					Only the inner content changes dynamically.

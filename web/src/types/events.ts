@@ -1,5 +1,6 @@
 import type { Message } from "@ag-ui/core";
 import type { z } from "zod";
+
 import type { ToolHandler } from "./tool.js";
 
 export interface AgUiMessagesChangedEvent extends CustomEvent<{
@@ -69,6 +70,6 @@ export interface DefineToolEventDetail<T extends z.ZodTypeAny = z.ZodTypeAny> {
  * Event dispatched to register a tool with ag-ui-agent.
  * The generic parameter ensures type safety between schema and handler.
  */
-export interface DefineToolEvent<
-  T extends z.ZodTypeAny = z.ZodTypeAny,
-> extends CustomEvent<DefineToolEventDetail<T>> {}
+export interface DefineToolEvent<T extends z.ZodTypeAny = z.ZodTypeAny> extends CustomEvent<
+  DefineToolEventDetail<T>
+> {}
