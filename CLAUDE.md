@@ -23,9 +23,13 @@ web/src/
 ├── styles/              # Shared CSS (tokens, base styles, a11y utilities)
 ├── types/               # TypeScript type definitions
 │   ├── message.ts       # Chat message types (ChatMessageData, ChatLoadingData)
-│   └── events.ts        # AG-UI event types
+│   ├── events.ts        # AG-UI custom event types
+│   └── tool.ts          # ToolDefinition, ToolHandler, defineTool()
+├── tools/               # Client-side tool implementations
+│   └── hello-tool.ts    # Example tool registration
 ├── ag-ui-agent.ts       # Headless Custom Element wrapping HttpAgent
-└── chat-app.ts          # Application entry point
+├── chat-app.ts          # Application entry point
+└── index.css            # Global styles
 ```
 
 **Design principle:** Custom elements in `custom-elements/` are primitive, reusable components independent of application logic. `ag-ui-agent` is a headless Custom Element that handles AG-UI protocol communication and dispatches events.
@@ -63,18 +67,29 @@ pnpm install    # Install dependencies
 pnpm dev        # Start dev server with hot reload
 pnpm build      # Compile TypeScript + build production bundle
 pnpm preview    # Preview production build locally
+pnpm check      # Biome lint & auto-fix
+pnpm format     # Prettier format
 ```
+
+### Linting & Formatting
+
+- **Biome** (linter): Recommended rules, auto-organize imports. Formatter disabled (delegated to Prettier).
+- **Prettier** (formatter): Double quotes.
+- **TypeScript**: Strict mode, `experimentalDecorators`, `noUnusedLocals`, `noUnusedParameters`.
+- **No test suite** currently configured.
 
 ## Tech Stack
 
 **Backend:**
-- Google ADK 1.23+ with Gemini 2.5 Flash
-- AG-UI ADK middleware (`ag-ui-adk`) for protocol integration
+- Google ADK 2.0.0b1+ with Gemini (`gemini-flash-latest` alias)
+- AG-UI ADK middleware (`ag-ui-adk` 0.6.0+) for protocol integration. The `google-adk<2.0.0` constraint in ag-ui-adk is overridden via `[tool.uv] override-dependencies` in `pyproject.toml`.
 - FastAPI + Uvicorn
 
 **Frontend:**
 - Lit 3.3.1 - Web components with decorators
 - AG-UI client (`@ag-ui/client`) - HttpAgent for backend communication
+- marked + remend + DOMPurify - Safe Markdown rendering with XSS protection
+- Zod - Schema validation for client-side tool parameters
 - TypeScript ~5.9.3 - Strict mode, ES2022 target, experimental decorators
 - Vite 7.2.5 (rolldown-vite)
 
@@ -98,8 +113,27 @@ Agents use Google ADK's `Agent` class with model, description, instruction, and 
 | `ag-ui-run-started` | `{ threadId: string }` | On run start |
 | `ag-ui-run-failed` | `{ error: unknown }` | On error |
 | `ag-ui-run-finalized` | `{ threadId: string }` | On run complete |
+| `ag-ui-reasoning-start/content/end` | reasoning stream | THINKING/REASONING events |
+| `ag-ui-tool-call-start/args/end/error` | tool call details | Client-side tool execution |
 
 `chat-app.ts` listens to these events and manages UI state with `@state()` decorators.
+
+### Tool Definition Pattern (web/src/tools/, web/src/types/tool.ts)
+
+Client-side tools are defined with a Zod schema (auto-converted to JSON Schema) and registered by dispatching a `define-tool` CustomEvent:
+
+```typescript
+const tool = defineTool({
+  name: "tool_name",
+  description: "What it does",
+  parameters: z.object({ arg: z.string() }),
+  handler: ({ arg }) => `result: ${arg}`,
+});
+// Dispatch CustomEvent("define-tool", { detail: tool, bubbles: true, composed: true })
+// in firstUpdated(); ag-ui-agent listens and forwards to HttpAgent.
+```
+
+Tool execution is tracked in `_pendingToolResults[]` to prevent `ag-ui-run-finalized` from firing prematurely. After all tools complete, `_runAgent()` re-runs so the agent can process results.
 
 ### Custom Elements (web/src/custom-elements/)
 
